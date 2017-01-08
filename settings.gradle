@@ -1,0 +1,3 @@
+rootProject.name = '2017-game'
+include ':BCNLib'
+project(":BCNLib").projectDir = file("../BCNLib")
