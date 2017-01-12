@@ -1,15 +1,63 @@
-group 'explodingbacon'
-version '1.0'
+plugins {
+    id "java"
+    id 'org.hidetake.ssh' version '0.4.5'
+}
 
-apply plugin: 'java'
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
 
-sourceCompatibility = 1.5
+compileJava{
+    source = fileTree(dir:'src')
+}
 
 repositories {
     mavenCentral()
+
+    flatDir {
+        dirs '/lib'
+    }
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
     compile project(':BCNLib')
+}
+
+remotes {
+    roboRIO {
+        host = 'roboRIO-' + team + '-FRC.local'
+        user = 'admin'
+        password = ''
+    }
+}
+
+ssh.settings {
+    knownHosts = allowAnyHosts
+}
+
+jar {
+    baseName = 'FRCUserProgram'
+
+    manifest {
+        attributes 'Main-Class': 'edu.wpi.first.wpilibj.RobotBase', //edu.wpi.first.wpilibj.RobotBase //com.explodingbacon.robot.Robot
+                'Robot-Class': robotClass
+    }
+
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    println 'JAR located at ' + jar.archivePath
+}
+
+task deploy(dependsOn: 'jar') << {
+    description = "Deploy the user program to the roboRIO"
+    println 'Team is ' + team
+
+    ssh.run {
+        session(remotes.roboRIO) {
+            put jar.archivePath, '/home/lvuser'
+            put '/rioFiles/robotCommand', '/home/lvuser'
+            execute '. /etc/profile.d/natinst-path.sh; /usr/local/frc/bin/frcKillRobot.sh -t -r'
+        }
+    }
 }
