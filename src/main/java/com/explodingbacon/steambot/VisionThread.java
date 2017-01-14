@@ -24,7 +24,6 @@ public class VisionThread extends Thread {
         Image source = new Image();
         Image output = new Image();
 
-        //TODO: Implement settings control using the linux library v4l2whatever it's called
         while(true) {
             cvSink.grabFrame(source.getMat());
 

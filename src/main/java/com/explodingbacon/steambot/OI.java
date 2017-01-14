@@ -7,7 +7,8 @@ public class OI extends AbstractOI {
 
     private static boolean isInit = false;
 
-    private static Joystick joy;
+    public static Joystick drive = null;
+    public static Joystick turn = null;
 
     public OI() {
         init();
@@ -17,8 +18,8 @@ public class OI extends AbstractOI {
     public static void init() {
         isInit = true;
 
-        //TODO: set up joysticks and variables
-        joy = new Joystick(0);
+        drive = new Joystick(0);
+        turn = new Joystick(1);
     }
 
     /**
