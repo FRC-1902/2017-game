@@ -2,17 +2,18 @@ package com.explodingbacon.steambot;
 
 import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.framework.RobotCore;
-import com.explodingbacon.bcnlib.vision.CameraSettings;
 import com.explodingbacon.bcnlib.vision.Vision;
 import com.explodingbacon.steambot.commands.DriveCommand;
 import com.explodingbacon.steambot.subsystems.DriveSubsystem;
+import com.explodingbacon.steambot.subsystems.VisionSubsystem;
 import edu.wpi.first.wpilibj.IterativeRobot;
 
 public class Robot extends RobotCore {
 
     private OI oi;
     public static DriveSubsystem drive;
-    private VisionThread vision = new VisionThread();
+    public static VisionSubsystem vision;
+    private VisionThread visionThread = new VisionThread();
 
     public Robot(IterativeRobot r) {
         super(r);
@@ -21,9 +22,10 @@ public class Robot extends RobotCore {
 
         Vision.init();
 
-        if (Vision.isInit()) vision.start();
-
         drive = new DriveSubsystem();
+        vision = new VisionSubsystem();
+
+        if (Vision.isInit()) visionThread.start();
 
         Log.i("Pork Lift II initialized.");
     }
@@ -33,6 +35,8 @@ public class Robot extends RobotCore {
         super.enabledInit();
 
         OI.deleteAllTriggers();
+
+        vision.setRingLight(true);
 
         Log.d("Enabled init");
     }

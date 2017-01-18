@@ -2,7 +2,7 @@ package com.explodingbacon.steambot;
 
 public class Map {
 
-    //TODO: add mappings here
+    //PWM
 
     public static int LEFT_DRIVE_1 = 1;
     public static int LEFT_DRIVE_2 = 5;
@@ -12,5 +12,9 @@ public class Map {
 
     public static int STRAFE_DRIVE_1 = 0;
     public static int STRAFE_DRIVE_2 = 2;
+
+    //Solenoid
+
+    public static int RINGLIGHT = 0;
 
 }
