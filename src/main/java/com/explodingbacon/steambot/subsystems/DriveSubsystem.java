@@ -1,9 +1,12 @@
 package com.explodingbacon.steambot.subsystems;
 
 import com.explodingbacon.bcnlib.actuators.FakeMotor;
+import com.explodingbacon.bcnlib.actuators.Motor;
 import com.explodingbacon.bcnlib.actuators.MotorGroup;
 import com.explodingbacon.bcnlib.framework.PIDController;
 import com.explodingbacon.bcnlib.sensors.ADXSensor;
+import com.explodingbacon.bcnlib.sensors.AbstractEncoder;
+import com.explodingbacon.bcnlib.sensors.Encoder;
 import com.explodingbacon.bcnlib.utils.Utils;
 import com.explodingbacon.steambot.Map;
 import edu.wpi.first.wpilibj.SPI;
@@ -12,41 +15,70 @@ import edu.wpi.first.wpilibj.VictorSP;
 public class DriveSubsystem {
 
     private MotorGroup leftMotors, rightMotors, strafeMotors;
-    private PIDController leftPID, rightPID, strafePID, rotatePID;
+    private Motor frontLeft, backLeft, frontRight, backRight;
+    private Encoder frontLeftEncoder, backLeftEncoder, frontRightEncoder, backRightEncoder, strafeEncoder;
+
+    private PIDController frontLeftPID, backLeftPID, frontRightPID, backRightPID, strafePID, rotatePID;
     private ADXSensor adx;
-    private FakeMotor leftPidOutput, rightPidOutput, strafePidOutput, rotatePidOutput;
-    private Thread t;
-    private final Integer MAX_STRAFE = 100; //TODO: This
+    private FakeMotor rotatePidOutput;
+
+    private Thread watchdogThread;
+    private Long lastSet = 0L;
+
     private final Integer MAX_DRIVE = 100; //TODO: This
+    private final Integer MAX_STRAFE = 100; //TODO: This
+    private final Double driveKP = 0d; //TODO: This
+    private final Double driveKI = 0d; //TODO: This
+    private final Double driveKD = 0d; //TODO: This
 
     public DriveSubsystem() {
         leftMotors = new MotorGroup(VictorSP.class, Map.LEFT_DRIVE_1, Map.LEFT_DRIVE_2);
         rightMotors = new MotorGroup(VictorSP.class, Map.RIGHT_DRIVE_1, Map.RIGHT_DRIVE_2);
         strafeMotors = new MotorGroup(VictorSP.class, Map.STRAFE_DRIVE_1, Map.STRAFE_DRIVE_2);
         strafeMotors.setInverts(false, false);
-        t = new Thread(updateMotors);
 
-        leftPidOutput = new FakeMotor();
-        rightPidOutput = new FakeMotor();
-        strafePidOutput = new FakeMotor();
+        frontLeft = leftMotors.getMotors().get(0);
+        backLeft = leftMotors.getMotors().get(1);
+        frontRight = rightMotors.getMotors().get(0);
+        backRight = rightMotors.getMotors().get(1);
+
+        watchdogThread = new Thread(watchdogRunnable);
+
         rotatePidOutput = new FakeMotor();
 
         adx = new ADXSensor(SPI.Port.kOnboardCS1, SPI.Port.kOnboardCS0);
+        frontLeftEncoder = new Encoder(Map.FRONT_LEFT_ENC_A, Map.FRONT_LEFT_ENC_B);
+        backLeftEncoder = new Encoder(Map.BACK_LEFT_ENC_A, Map.BACK_LEFT_ENC_B);
+        frontRightEncoder = new Encoder(Map.FRONT_RIGHT_ENC_A, Map.FRONT_RIGHT_ENC_B);
+        backRightEncoder = new Encoder(Map.BACK_RIGHT_ENC_A, Map.BACK_RIGHT_ENC_B);
+        strafeEncoder = new Encoder(Map.STRAFE_ENC_A, Map.STRAFE_ENC_B);
 
-        //TODO: tune
-        leftPID = new PIDController(leftPidOutput, adx, 0, 0, 0);
-        rightPID = new PIDController(rightPidOutput, adx, 0, 0, 0);
-        strafePID = new PIDController(strafePidOutput, adx, 0, 0, 0);
-        rotatePID = new PIDController(rotatePidOutput, adx, 0, 0, 0);
+        frontLeftEncoder.setPIDMode(AbstractEncoder.PIDMode.RATE);
 
-        t.start();
+        frontLeftPID = new PIDController(frontLeft, frontLeftEncoder, driveKP, driveKI, driveKD);
+        backLeftPID = new PIDController(backLeft, backLeftEncoder, driveKP, driveKI, driveKD);
+        frontRightPID = new PIDController(frontRight, frontLeftEncoder, driveKP, driveKI, driveKD);
+        backRightPID = new PIDController(backRight, backRightEncoder, driveKP, driveKI, driveKD);
+        strafePID = new PIDController(strafeMotors, strafeEncoder, 0, 0, 0); //TODO: Tune
+        rotatePID = new PIDController(rotatePidOutput, adx, 0, 0, 0); //TODO: Tune
+
+        lastSet = System.currentTimeMillis();
+        watchdogThread.start();
     }
 
-    private Runnable updateMotors = () -> {
+    /**
+     * Disable all drive train motors if not set in the last second.
+     */
+    private Runnable watchdogRunnable = () -> {
+        //noinspection InfiniteLoopStatement
         while (true) {
-            leftMotors.setPower(leftPidOutput.getPower());
-            rightMotors.setPower(rightPidOutput.getPower());
-            strafeMotors.setPower(strafePidOutput.getPower());
+            if (System.currentTimeMillis() - lastSet > 1000) set(0, 0, 0);
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
     };
 
@@ -57,10 +89,13 @@ public class DriveSubsystem {
      * @param rightPow Right Motor Power
      * @param strafePow Horizontal Strafing Power
      */
-    public void set(double leftPow, double rightPow, double strafePow) {
-        leftPID.setTarget(leftPow);
-        rightPID.setTarget(rightPow);
+    private void set(double leftPow, double rightPow, double strafePow) {
+        frontLeftPID.setTarget(leftPow);
+        backLeftPID.setTarget(leftPow);
+        frontRightPID.setTarget(rightPow);
+        backRightPID.setTarget(rightPow);
         strafePID.setTarget(strafePow);
+
     }
 
     private void setFiltered(double leftPower, double rightPower, double strafePower) {
@@ -81,6 +116,7 @@ public class DriveSubsystem {
      * @param rightRpm Right Motor Power
      */
     public void tankDrive(double leftRpm, double rightRpm) {
+        rotatePID.disable();
         set(leftRpm, rightRpm, 0);
     }
 
@@ -91,6 +127,7 @@ public class DriveSubsystem {
      * @param z Turning power, -1 to 1
      */
     public void xyzDrive(double x, double y, double z) {
+        rotatePID.disable();
         setFiltered(y + z, y - z, x);
     }
 
@@ -101,6 +138,7 @@ public class DriveSubsystem {
      * @param angle Desired angle, 0 to 360 (degrees)
      */
     public void xyzAbsoluteAngleDrive(double x, double y, double angle) {
+        if (!rotatePID.isEnabled()) rotatePID.enable();
         rotatePID.setTarget(angle);
         double z = rotatePidOutput.getPower();
 
@@ -115,12 +153,13 @@ public class DriveSubsystem {
      * @param z Turning power, -1 to 1
      */
     public void fieldCentricDrive(double x, double y, double z) {
+        rotatePID.disable();
         double angle = adx.getAngle();
         double xSet, ySet;
 
         xSet = y * Math.sin(angle) + x * Math.cos(angle);
-
         ySet = y * Math.cos(angle) + x * Math.sin(angle);
+
         setFiltered(ySet + z, ySet - z, xSet);
     }
 
@@ -129,10 +168,12 @@ public class DriveSubsystem {
      *
      * @param x X power, -1 to 1
      * @param y Y power, -1 to 1
-     * @param target Desired angle, 0 to 360 (degrees)
+     * @param target Desired angle, 0 to 360 (degrees). 0 is facing away from driver station.
      */
     public void fieldCentricAbsoluteAngleDrive(double x, double y, double target) {
+        if (!rotatePID.isEnabled()) rotatePID.enable();
         rotatePID.setTarget(target);
+
         double z = rotatePidOutput.getPower();
         double angle = adx.getAngle();
         double xSet, ySet;

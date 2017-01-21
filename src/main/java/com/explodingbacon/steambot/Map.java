@@ -13,6 +13,18 @@ public class Map {
     public static int STRAFE_DRIVE_1 = 0;
     public static int STRAFE_DRIVE_2 = 2;
 
+    //DIO //TODO: This
+    public static int FRONT_LEFT_ENC_A = 0;
+    public static int FRONT_LEFT_ENC_B = 0;
+    public static int BACK_LEFT_ENC_A = 0;
+    public static int BACK_LEFT_ENC_B = 0;
+    public static int FRONT_RIGHT_ENC_A = 0;
+    public static int FRONT_RIGHT_ENC_B = 0;
+    public static int BACK_RIGHT_ENC_A = 0;
+    public static int BACK_RIGHT_ENC_B = 0;
+    public static int STRAFE_ENC_A = 0;
+    public static int STRAFE_ENC_B = 0;
+
     //Solenoid
 
     public static int RINGLIGHT = 0;
