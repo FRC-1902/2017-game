@@ -32,6 +32,7 @@ public class VisionThread extends Thread {
         CameraSettings.setExposureAuto(1);
         CameraSettings.setExposure(9);
 
+        //noinspection InfiniteLoopStatement
         while (true) {
             cvSink.grabFrame(source.getMat());
 

@@ -27,6 +27,6 @@ public class Map {
 
     //Solenoid
 
-    public static int RINGLIGHT = 0;
+    public static int RING_LIGHT = 0;
 
 }

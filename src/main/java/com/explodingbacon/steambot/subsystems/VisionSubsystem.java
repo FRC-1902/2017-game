@@ -7,15 +7,12 @@ import com.explodingbacon.steambot.Map;
 
 import java.util.List;
 
-/**
- * Created by LenovoBacon1 on 1/17/2017.
- */
 public class VisionSubsystem extends Subsystem {
 
     private Solenoid ringLight;
 
     public VisionSubsystem() {
-        ringLight = new Solenoid(Map.RINGLIGHT);
+        ringLight = new Solenoid(Map.RING_LIGHT);
     }
 
     public boolean getRingLight() {
