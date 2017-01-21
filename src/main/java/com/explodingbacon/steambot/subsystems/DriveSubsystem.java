@@ -1,6 +1,7 @@
 package com.explodingbacon.steambot.subsystems;
 
 import com.explodingbacon.bcnlib.actuators.MotorGroup;
+import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.framework.PIDController;
 import com.explodingbacon.bcnlib.sensors.ADXSensor;
 import com.explodingbacon.bcnlib.utils.Utils;
@@ -83,13 +84,15 @@ public class DriveSubsystem {
      * @param z Turning power, -1 to 1
      */
     public void fieldCentricDrive(double x, double y, double z) {
-        double angle = adx.getAngle();
+        double angle = Math.toRadians(adx.getAngle());
         double xSet, ySet;
 
         xSet = y * Math.sin(angle) + x * Math.cos(angle);
 
         ySet = y * Math.cos(angle) + x * Math.sin(angle);
-        setFiltered(ySet + z, ySet - z, xSet);
+
+        //Log.i("" + Math.sin(angle) + ", " + Math.cos(angle));
+        setFiltered(ySet + z, -ySet + z, xSet);
     }
 
     /**
@@ -111,6 +114,17 @@ public class DriveSubsystem {
         setFiltered(ySet + z, ySet - z, xSet);
     }
 
+    public void ghettoFieldCentricAbsoluteAngleDrive(double x, double y, double target) {
+        double angle = Math.toRadians(adx.getAngle());
+        double z = Utils.minMax((target - angle)/(Math.PI), 0.1, 0.8);
+        double xSet, ySet;
+
+        xSet = y * Math.sin(angle) + x * Math.cos(angle);
+        ySet = y * Math.cos(angle) + x * Math.sin(angle);
+
+        setFiltered(ySet + z, -ySet + z, xSet);
+    }
+
     public MotorGroup getLeftMotors() {
         return leftMotors;
     }
@@ -121,6 +135,10 @@ public class DriveSubsystem {
 
     public MotorGroup getStrafeMotors() {
         return strafeMotors;
+    }
+
+    public ADXSensor getADX() {
+        return adx;
     }
 
     private void setFiltered(double leftPower, double rightPower, double strafePower) {

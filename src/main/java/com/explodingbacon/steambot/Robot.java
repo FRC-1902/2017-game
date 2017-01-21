@@ -55,5 +55,21 @@ public class Robot extends RobotCore {
         OI.runCommand(new DriveCommand());
 
         Log.d("Teleop init");
+
+        /*
+        try {
+            Robot.drive.getLeftMotors().testEachWait(0.3, 0.3);
+            Thread.sleep(1000);
+            Robot.drive.getRightMotors().testEachWait(0.3, 0.3);
+            Thread.sleep(1000);
+            Robot.drive.getStrafeMotors().testEachWait(0.3, 0.3);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }*/
+    }
+
+    @Override
+    public void teleopPeriodic() {
+
     }
 }
