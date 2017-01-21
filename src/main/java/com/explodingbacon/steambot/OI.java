@@ -24,6 +24,7 @@ public class OI extends AbstractOI {
 
     /**
      * Checks if OI has been initialized via OI.init().
+     *
      * @return If OI has been initialized via OI.init().
      */
     public static boolean isInit() {

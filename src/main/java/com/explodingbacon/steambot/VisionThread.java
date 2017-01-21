@@ -7,11 +7,9 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
-import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class VisionThread extends Thread {
@@ -34,7 +32,7 @@ public class VisionThread extends Thread {
         CameraSettings.setExposureAuto(1);
         CameraSettings.setExposure(9);
 
-        while(true) {
+        while (true) {
             cvSink.grabFrame(source.getMat());
 
             output = source.copy();

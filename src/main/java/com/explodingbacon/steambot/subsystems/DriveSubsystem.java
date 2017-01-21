@@ -85,8 +85,8 @@ public class DriveSubsystem {
     /**
      * Set the power of all of the drive train motors
      *
-     * @param leftPow Left Motor Power
-     * @param rightPow Right Motor Power
+     * @param leftPow   Left Motor Power
+     * @param rightPow  Right Motor Power
      * @param strafePow Horizontal Strafing Power
      */
     private void set(double leftPow, double rightPow, double strafePow) {
@@ -112,7 +112,7 @@ public class DriveSubsystem {
     /**
      * Drive the Drive Train like it doesn't have the ability to strafe
      *
-     * @param leftRpm Left Motor Power
+     * @param leftRpm  Left Motor Power
      * @param rightRpm Right Motor Power
      */
     public void tankDrive(double leftRpm, double rightRpm) {
@@ -122,6 +122,7 @@ public class DriveSubsystem {
 
     /**
      * Drive the robot along a certain vector relative to the robot
+     *
      * @param x X power, -1 to 1
      * @param y Y power, -1 to 1
      * @param z Turning power, -1 to 1
@@ -133,8 +134,9 @@ public class DriveSubsystem {
 
     /**
      * Drive the robot along a certain vector, facing a given direction, relative to the robot
-     * @param x X power, -1 to 1
-     * @param y Y power, -1 to 1
+     *
+     * @param x     X power, -1 to 1
+     * @param y     Y power, -1 to 1
      * @param angle Desired angle, 0 to 360 (degrees)
      */
     public void xyzAbsoluteAngleDrive(double x, double y, double angle) {
@@ -166,8 +168,8 @@ public class DriveSubsystem {
     /**
      * Drive the robot along a certain vector, facing a given direction, relative to the field
      *
-     * @param x X power, -1 to 1
-     * @param y Y power, -1 to 1
+     * @param x      X power, -1 to 1
+     * @param y      Y power, -1 to 1
      * @param target Desired angle, 0 to 360 (degrees). 0 is facing away from driver station.
      */
     public void fieldCentricAbsoluteAngleDrive(double x, double y, double target) {

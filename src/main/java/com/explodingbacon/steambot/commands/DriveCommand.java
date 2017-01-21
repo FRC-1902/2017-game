@@ -14,7 +14,8 @@ public class DriveCommand extends Command {
     private double joyX, joyY, joyZ;
 
     @Override
-    public void onInit() {}
+    public void onInit() {
+    }
 
     @Override
     public void onLoop() {
@@ -44,7 +45,7 @@ public class DriveCommand extends Command {
         joyZ = Utils.deadzone(joyZ, deadzone);
 
         Double scalar = Utils.maxDouble(joyX + joyZ, joyY + joyZ);
-        if(scalar < 1) scalar = 1d;
+        if (scalar < 1) scalar = 1d;
 
         if (joyY > 0 && joyZ < strafeDrivingDeadzone) {
             joyZ = 0;
