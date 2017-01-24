@@ -1,14 +1,14 @@
 package com.explodingbacon.steambot;
 
 import com.explodingbacon.bcnlib.controllers.Joystick;
+import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.AbstractOI;
 
 public class OI extends AbstractOI {
 
     private static boolean isInit = false;
 
-    public static Joystick drive = null;
-    public static Joystick turn = null;
+    public static XboxController drive = null;
 
     public OI() {
         init();
@@ -18,8 +18,7 @@ public class OI extends AbstractOI {
     public static void init() {
         isInit = true;
 
-        drive = new Joystick(0);
-        turn = new Joystick(1);
+        drive = new XboxController(0);
     }
 
     /**

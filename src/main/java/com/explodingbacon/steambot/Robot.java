@@ -1,3 +1,18 @@
+/**
+ * CURRENTLY UNNAMED 2017 ROBOT -- (totally Pork Lift II though)
+ *
+ * This project was written and developed for the 2017 FIRST Robotics Competition game, "STEAMWorks". All code used was
+ * either written by team 1902 and/or is open-source and available to all teams.
+ *
+ * Written by:
+ *
+ * Ryan Shavell
+ * Dominic Canora
+ * Ruth Pearl
+ * Adam C.
+ * Varun A.
+ */
+
 package com.explodingbacon.steambot;
 
 import com.explodingbacon.bcnlib.framework.Log;

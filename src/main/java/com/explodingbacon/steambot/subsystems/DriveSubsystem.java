@@ -16,9 +16,9 @@ public class DriveSubsystem {
 
     private MotorGroup leftMotors, rightMotors, strafeMotors;
     private Motor frontLeft, backLeft, frontRight, backRight;
-    private Encoder frontLeftEncoder, backLeftEncoder, frontRightEncoder, backRightEncoder, strafeEncoder;
+    public Encoder frontLeftEncoder, backLeftEncoder, frontRightEncoder, backRightEncoder, strafeEncoder;
 
-    private PIDController frontLeftPID, backLeftPID, frontRightPID, backRightPID, strafePID, rotatePID;
+    private PIDController frontLeftPID, backLeftPID, frontRightPID, backRightPID, /*strafePID,*/ rotatePID;
     private ADXSensor adx;
     private FakeMotor rotatePidOutput;
 
@@ -51,7 +51,7 @@ public class DriveSubsystem {
         backLeftEncoder = new Encoder(Map.BACK_LEFT_ENC_A, Map.BACK_LEFT_ENC_B);
         frontRightEncoder = new Encoder(Map.FRONT_RIGHT_ENC_A, Map.FRONT_RIGHT_ENC_B);
         backRightEncoder = new Encoder(Map.BACK_RIGHT_ENC_A, Map.BACK_RIGHT_ENC_B);
-        strafeEncoder = new Encoder(Map.STRAFE_ENC_A, Map.STRAFE_ENC_B);
+        //strafeEncoder = new Encoder(Map.STRAFE_ENC_A, Map.STRAFE_ENC_B);
 
         frontLeftEncoder.setPIDMode(AbstractEncoder.PIDMode.RATE);
 
@@ -59,7 +59,7 @@ public class DriveSubsystem {
         backLeftPID = new PIDController(backLeft, backLeftEncoder, driveKP, driveKI, driveKD);
         frontRightPID = new PIDController(frontRight, frontLeftEncoder, driveKP, driveKI, driveKD);
         backRightPID = new PIDController(backRight, backRightEncoder, driveKP, driveKI, driveKD);
-        strafePID = new PIDController(strafeMotors, strafeEncoder, 0, 0, 0); //TODO: Tune
+        //strafePID = new PIDController(strafeMotors, strafeEncoder, 0, 0, 0); //TODO: Tune
         rotatePID = new PIDController(rotatePidOutput, adx, 0, 0, 0); //TODO: Tune
 
         lastSet = System.currentTimeMillis();
@@ -70,6 +70,7 @@ public class DriveSubsystem {
      * Disable all drive train motors if not set in the last second.
      */
     private Runnable watchdogRunnable = () -> {
+        if(true) return; //TODO: Re-enable
         //noinspection InfiniteLoopStatement
         while (true) {
             if (System.currentTimeMillis() - lastSet > 1000) set(0, 0, 0);
@@ -94,8 +95,7 @@ public class DriveSubsystem {
         backLeftPID.setTarget(leftPow);
         frontRightPID.setTarget(rightPow);
         backRightPID.setTarget(rightPow);
-        strafePID.setTarget(strafePow);
-
+        //strafePID.setTarget(strafePow);
     }
 
     private void setFiltered(double leftPower, double rightPower, double strafePower) {
@@ -184,6 +184,28 @@ public class DriveSubsystem {
         ySet = y * Math.cos(angle) + x * Math.sin(angle);
 
         setFiltered(ySet + z, ySet - z, xSet);
+    }
+
+    /**
+     * Converts inches to drive encoder clicks.
+     *
+     * @param inches The inches to be converted.
+     * @return The encoder clicks equivalent to the inches provided.
+     */
+    //TODO: This is the math from 2015, double check it's correct
+    private static double inchesToDriveEncoder(double inches) {
+        return inches / (Math.PI * 4) * 444.4444444444444;
+    }
+
+    /**
+     * Converts inches to strafe encoder clicks.
+     *
+     * @param inches The inches to be converted.
+     * @return The encoder clicks equivalent to the inches provided.
+     */
+    //TODO: This is the math from 2015, double check it's correct
+    public static double inchesToStrafeEncoder(double inches) {
+        return inches / (Math.PI * 4) * 1440;
     }
 
     public MotorGroup getLeftMotors() {

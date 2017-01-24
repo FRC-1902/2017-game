@@ -1,8 +1,11 @@
 package com.explodingbacon.steambot.commands;
 
+import com.explodingbacon.bcnlib.actuators.Motor;
 import com.explodingbacon.bcnlib.actuators.MotorGroup;
 import com.explodingbacon.bcnlib.controllers.Joystick;
+import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.Command;
+import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.utils.Utils;
 import com.explodingbacon.steambot.OI;
 import com.explodingbacon.steambot.Robot;
@@ -10,25 +13,23 @@ import com.explodingbacon.steambot.Robot;
 public class DriveCommand extends Command {
 
     private final double deadzone = 0.1;
-    private final double strafeDrivingDeadzone = 0.2;
     private double joyX, joyY, joyZ;
+    private MotorGroup left, right, strafe;
+    private XboxController drive;
 
     @Override
     public void onInit() {
+        left = Robot.drive.getLeftMotors();
+        right = Robot.drive.getRightMotors();
+        strafe = Robot.drive.getStrafeMotors();
+        drive = OI.drive;
     }
 
     @Override
     public void onLoop() {
-        Joystick drive = OI.drive;
-        Joystick turn = OI.turn;
-
-        MotorGroup left = Robot.drive.getLeftMotors();
-        MotorGroup right = Robot.drive.getRightMotors();
-        MotorGroup strafe = Robot.drive.getStrafeMotors();
-
         joyX = drive.getX();
-        joyY = drive.getY();
-        joyZ = -turn.getX();
+        joyY = -drive.getY();
+        joyZ = -drive.getX2();
 
         joyX = Math.pow(joyX, 2) * Utils.sign(joyX);
         joyY = Math.pow(joyY, 2) * Utils.sign(joyY);
@@ -46,10 +47,6 @@ public class DriveCommand extends Command {
 
         Double scalar = Utils.maxDouble(joyX + joyZ, joyY + joyZ);
         if (scalar < 1) scalar = 1d;
-
-        if (joyY > 0 && joyZ < strafeDrivingDeadzone) {
-            joyZ = 0;
-        }
 
         left.setPower((joyZ + joyY) / scalar);
         right.setPower((joyZ - joyY) / scalar);
