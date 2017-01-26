@@ -4,21 +4,30 @@ import com.explodingbacon.bcnlib.actuators.FakeMotor;
 import com.explodingbacon.bcnlib.actuators.Motor;
 import com.explodingbacon.bcnlib.actuators.MotorGroup;
 import com.explodingbacon.bcnlib.framework.PIDController;
+import com.explodingbacon.bcnlib.framework.Subsystem;
 import com.explodingbacon.bcnlib.sensors.ADXSensor;
 import com.explodingbacon.bcnlib.sensors.AbstractEncoder;
 import com.explodingbacon.bcnlib.sensors.Encoder;
+import com.explodingbacon.bcnlib.utils.BNO055;
+import com.explodingbacon.bcnlib.utils.BNOGyro;
 import com.explodingbacon.bcnlib.utils.Utils;
 import com.explodingbacon.steambot.Map;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.VictorSP;
 
-public class DriveSubsystem {
+import java.util.List;
+
+public class DriveSubsystem extends Subsystem {
+
+    private static final boolean USE_PIDs = false;
 
     private MotorGroup leftMotors, rightMotors, strafeMotors;
     private Motor frontLeft, backLeft, frontRight, backRight;
     public Encoder frontLeftEncoder, backLeftEncoder, frontRightEncoder, backRightEncoder, strafeEncoder;
 
-    private PIDController frontLeftPID, backLeftPID, frontRightPID, backRightPID, /*strafePID,*/ rotatePID;
+    private BNOGyro gyro;
+
+    public PIDController frontLeftPID, backLeftPID, frontRightPID, backRightPID, /*strafePID,*/ rotatePID;
     private ADXSensor adx;
     private FakeMotor rotatePidOutput;
 
@@ -27,7 +36,7 @@ public class DriveSubsystem {
 
     private final Integer MAX_DRIVE = 100; //TODO: This
     private final Integer MAX_STRAFE = 100; //TODO: This
-    private final Double driveKP = 0d; //TODO: This
+    private final Double driveKP = 0.1d; //TODO: This
     private final Double driveKI = 0d; //TODO: This
     private final Double driveKD = 0d; //TODO: This
 
@@ -53,17 +62,64 @@ public class DriveSubsystem {
         backRightEncoder = new Encoder(Map.BACK_RIGHT_ENC_A, Map.BACK_RIGHT_ENC_B);
         //strafeEncoder = new Encoder(Map.STRAFE_ENC_A, Map.STRAFE_ENC_B);
 
-        frontLeftEncoder.setPIDMode(AbstractEncoder.PIDMode.RATE);
+        frontLeftEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
+        backLeftEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
+        frontRightEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
+        backRightEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
+
+        frontLeftEncoder.setReversed(false);
+        backLeftEncoder.setReversed(false);
+        //TODO: What's better, inverting in code or inverting A and B ports when making the encoder?
+        frontRightEncoder.setReversed(true);
+        backRightEncoder.setReversed(true);
 
         frontLeftPID = new PIDController(frontLeft, frontLeftEncoder, driveKP, driveKI, driveKD);
         backLeftPID = new PIDController(backLeft, backLeftEncoder, driveKP, driveKI, driveKD);
-        frontRightPID = new PIDController(frontRight, frontLeftEncoder, driveKP, driveKI, driveKD);
+        frontRightPID = new PIDController(frontRight, frontRightEncoder, driveKP, driveKI, driveKD);
         backRightPID = new PIDController(backRight, backRightEncoder, driveKP, driveKI, driveKD);
         //strafePID = new PIDController(strafeMotors, strafeEncoder, 0, 0, 0); //TODO: Tune
         rotatePID = new PIDController(rotatePidOutput, adx, 0, 0, 0); //TODO: Tune
 
+        //frontLeftPID.setFinishedTolerance(20);
+
+        //gyro = new BNOGyro(true);
+
         lastSet = System.currentTimeMillis();
         watchdogThread.start();
+    }
+
+    public void enabledInit() {
+        frontLeftEncoder.reset();
+        backLeftEncoder.reset();
+        frontRightEncoder.reset();
+        backRightEncoder.reset();
+
+        if (USE_PIDs) {
+            frontLeftPID.enable();
+            backLeftPID.enable();
+            frontRightPID.enable();
+            backRightPID.enable();
+            //strafePID.enable();
+        }
+    }
+
+    @Override
+    public void disabledInit() {
+        frontLeftPID.disable();
+        backLeftPID.disable();
+        frontRightPID.disable();
+        backRightPID.disable();
+        //strafePID.disable();
+    }
+
+    @Override
+    public void stop() {
+        set(0, 0, 0);
+    }
+
+    @Override
+    public List<Motor> getAllMotors() {
+        return null;
     }
 
     /**
@@ -90,12 +146,18 @@ public class DriveSubsystem {
      * @param rightPow  Right Motor Power
      * @param strafePow Horizontal Strafing Power
      */
-    private void set(double leftPow, double rightPow, double strafePow) {
-        frontLeftPID.setTarget(leftPow);
-        backLeftPID.setTarget(leftPow);
-        frontRightPID.setTarget(rightPow);
-        backRightPID.setTarget(rightPow);
-        //strafePID.setTarget(strafePow);
+    public void set(double leftPow, double rightPow, double strafePow) {
+        if (USE_PIDs) {
+            frontLeftPID.setTarget(leftPow);
+            backLeftPID.setTarget(leftPow);
+            frontRightPID.setTarget(rightPow);
+            backRightPID.setTarget(rightPow);
+            //strafePID.setTarget(strafePow);
+        } else {
+            leftMotors.setPower(leftPow);
+            rightMotors.setPower(rightPow);
+            //strafeMotors.setPower(strafePow);
+        }
     }
 
     private void setFiltered(double leftPower, double rightPower, double strafePower) {
@@ -193,7 +255,7 @@ public class DriveSubsystem {
      * @return The encoder clicks equivalent to the inches provided.
      */
     //TODO: This is the math from 2015, double check it's correct
-    private static double inchesToDriveEncoder(double inches) {
+    public double inchesToDriveEncoder(double inches) {
         return inches / (Math.PI * 4) * 444.4444444444444;
     }
 
@@ -204,7 +266,7 @@ public class DriveSubsystem {
      * @return The encoder clicks equivalent to the inches provided.
      */
     //TODO: This is the math from 2015, double check it's correct
-    public static double inchesToStrafeEncoder(double inches) {
+    public double inchesToStrafeEncoder(double inches) {
         return inches / (Math.PI * 4) * 1440;
     }
 

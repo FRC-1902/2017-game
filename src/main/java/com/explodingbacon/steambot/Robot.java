@@ -16,6 +16,7 @@
 package com.explodingbacon.steambot;
 
 import com.explodingbacon.bcnlib.framework.Log;
+import com.explodingbacon.bcnlib.framework.PIDController;
 import com.explodingbacon.bcnlib.framework.RobotCore;
 import com.explodingbacon.bcnlib.vision.Vision;
 import com.explodingbacon.steambot.commands.DriveCommand;
@@ -57,17 +58,54 @@ public class Robot extends RobotCore {
     }
 
     @Override
+    public void enabledPeriodic() {
+        super.enabledPeriodic();
+
+        Log.d("FrontLeft: " + Robot.drive.frontLeftEncoder.get()  + ", BackLeft: " + Robot.drive.backLeftEncoder.get() +
+        ", FrontRight: " + Robot.drive.frontRightEncoder.get() + ", BackRight: " + Robot.drive.backRightEncoder.get());
+
+
+        PIDController fL = Robot.drive.frontLeftPID;
+        PIDController bL= Robot.drive.backLeftPID;
+        PIDController fR = Robot.drive.frontRightPID;
+        PIDController bR = Robot.drive.backRightPID;
+
+        //Log.d("Encoder: " + Robot.drive.frontLeftEncoder.get());
+
+        /*
+        Log.d("FrontLeft: " + fL.getCurrentError() + "/" + fL.getTarget() + ", BackLeft: " + bL.getCurrentError() + "/" +
+        bL.getTarget() + ", FrontRight: " + fR.getCurrentError() + "/" + fR.getTarget() + ", BackRight: " + bR.getCurrentError() +
+        "/" + bR.getTarget());
+        */
+
+        /*
+        Log.d("LeftMotors speed: " + fL.getMotorPower() + ", Error: " + fL.getCurrentError() +
+        ", done: " + fL.isDone() + ", enabled: " + fL.isEnabled());
+        */
+    }
+
+    @Override
     public void autonomousInit() {
         super.autonomousInit();
 
         Log.d("Autonomous init");
+
+        /*
+        double testDistance = Robot.drive.inchesToDriveEncoder(24);
+        Log.d("Drive distance: " + testDistance);
+        Robot.drive.set(testDistance, testDistance, 0);
+        */
+
+        Robot.drive.getLeftMotors().testEachWait(0.5, 0.5);
+        Robot.drive.getRightMotors().testEachWait(0.5, 0.5);
+        Robot.drive.getStrafeMotors().testEachWait(0.7, 0.5);
     }
 
     @Override
     public void teleopInit() {
         super.teleopInit();
 
-        OI.runCommand(new DriveCommand());
+        //OI.runCommand(new DriveCommand());
 
         Log.d("Teleop init");
     }

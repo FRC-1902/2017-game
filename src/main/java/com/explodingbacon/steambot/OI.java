@@ -1,6 +1,5 @@
 package com.explodingbacon.steambot;
 
-import com.explodingbacon.bcnlib.controllers.Joystick;
 import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.AbstractOI;
 
