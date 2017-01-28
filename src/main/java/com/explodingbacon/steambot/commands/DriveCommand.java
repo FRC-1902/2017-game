@@ -15,6 +15,7 @@ public class DriveCommand extends Command {
     private final double deadzone = 0.1;
     private double joyX, joyY, joyZ;
     private MotorGroup left, right, strafe;
+    private int angle = 0;
     private XboxController drive;
 
     @Override
@@ -28,7 +29,7 @@ public class DriveCommand extends Command {
     @Override
     public void onLoop() {
         joyX = drive.getX();
-        joyY = -drive.getY();
+        joyY = drive.getY();
         joyZ = -drive.getX2();
 
         joyX = Math.pow(joyX, 2) * Utils.sign(joyX);
@@ -45,12 +46,21 @@ public class DriveCommand extends Command {
         joyY = Utils.deadzone(joyY, deadzone);
         joyZ = Utils.deadzone(joyZ, deadzone);
 
+        /*
         Double scalar = Utils.maxDouble(joyX + joyZ, joyY + joyZ);
         if (scalar < 1) scalar = 1d;
 
         left.setPower((joyZ + joyY) / scalar);
         right.setPower((joyZ - joyY) / scalar);
         strafe.setPower(joyX / scalar);
+        */
+
+        Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
+
+        if(drive.x.get()) angle = 270;
+        if(drive.y.get()) angle = 0;
+        if(drive.b.get()) angle = 90;
+        if(drive.a.get()) angle = 180;
     }
 
     @Override
@@ -60,6 +70,6 @@ public class DriveCommand extends Command {
 
     @Override
     public boolean isFinished() {
-        return false;
+        return !Robot.isEnabled();
     }
 }
