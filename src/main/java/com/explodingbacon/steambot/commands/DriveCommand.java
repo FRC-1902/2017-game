@@ -13,10 +13,17 @@ import com.explodingbacon.steambot.Robot;
 public class DriveCommand extends Command {
 
     private final double deadzone = 0.1;
+
+    private final double angleAdjustRate = 1;
+
     private double joyX, joyY, joyZ;
     private MotorGroup left, right, strafe;
-    private int angle = 0;
+    private double angle = 0;
     private XboxController drive;
+
+    private boolean leftWasTrue = false, rightWasTrue = false;
+
+    private boolean leftTrigWasTrue = false, rightTrigWasTrue = false;
 
     @Override
     public void onInit() {
@@ -55,12 +62,46 @@ public class DriveCommand extends Command {
         strafe.setPower(joyX / scalar);
         */
 
-        Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
-
         if(drive.x.get()) angle = 270;
         if(drive.y.get()) angle = 0;
         if(drive.b.get()) angle = 90;
         if(drive.a.get()) angle = 180;
+
+        boolean left = drive.leftBumper.get();
+        boolean right = drive.rightBumper.get();
+
+        if (left && !leftWasTrue) {
+            angle -= 45;
+        } else if (right && !rightWasTrue) {
+            angle += 45;
+        }
+
+        leftWasTrue = left;
+        rightWasTrue = right;
+
+        double leftTrig = Utils.deadzone(drive.getLeftTrigger(), deadzone);
+        double rightTrig = Utils.deadzone(drive.getRightTrigger(), deadzone);
+
+        if (leftTrig > 0) {
+            angle -= angleAdjustRate * leftTrig;
+        } else if (rightTrig > 0) {
+            angle += angleAdjustRate * rightTrig;
+        } else {
+            if (leftTrigWasTrue || rightTrigWasTrue) {
+                //angle = Robot.drive.gyro.getHeading();
+            }
+        }
+
+        leftTrigWasTrue = leftTrig > 0;
+        rightTrigWasTrue = rightTrig > 0;
+
+        if (angle < 0) {
+            angle = 360 + angle;
+        } else if (angle > 360) {
+            angle = angle - 360;
+        }
+
+        Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
     }
 
     @Override

@@ -15,7 +15,9 @@ import java.util.List;
 
 public class DriveSubsystem extends Subsystem {
 
-    private static final boolean USE_PIDs = true;
+    //TODO: Confirm right drive encoder is plugged in
+    private static final boolean USE_PIDs = false
+            ;
 
     private MotorGroup leftMotors, rightMotors, strafeMotors;
     private Motor frontLeft, backLeft, frontRight, backRight;
@@ -73,7 +75,7 @@ public class DriveSubsystem extends Subsystem {
         frontRightPID = new PIDController(frontRight, frontRightEncoder, driveKP, driveKI, driveKD);
         backRightPID = new PIDController(backRight, backRightEncoder, driveKP, driveKI, driveKD);
         strafePID = new PIDController(strafeMotors, strafeEncoder, 0.01, 0, 0); //TODO: Tune
-        rotatePID = new PIDController(rotatePidOutput, gyro, 0.01, 0.0001, 0.02, 0.0, 0.5)
+        rotatePID = new PIDController(rotatePidOutput, gyro, 0.01, 0.0001, 0.02, 0.1, 0.5)
                 .setRotational(true); //TODO: Tune
 
         frontLeftPID.setInputInverted(true);
@@ -82,7 +84,7 @@ public class DriveSubsystem extends Subsystem {
 
         //Good-enough rotatePID values for field-centric stuff: 0.01, 0.0001, 0.02, 0.0, 0.5
 
-        strafePID.setFinishedTolerance(0.5);
+        strafePID.setFinishedTolerance(3);
 
         lastSet = System.currentTimeMillis();
         watchdogThread.start();

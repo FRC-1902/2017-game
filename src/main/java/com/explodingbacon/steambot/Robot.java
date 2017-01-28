@@ -1,7 +1,7 @@
 /**
  * CURRENTLY UNNAMED 2017 ROBOT -- (totally Pork Lift II though)
  *
- * This project was written and developed for the 2017 FIRST Robotics Competition game, "STEAMWorks". All code used was
+ * This project was written and developed for the 2017 FIRST Robotics Competition game, "STEAMWORKS". All code used was
  * either written by team 1902 and/or is open-source and available to all teams.
  *
  * Written by:
@@ -16,9 +16,7 @@
 package com.explodingbacon.steambot;
 
 import com.explodingbacon.bcnlib.framework.Log;
-import com.explodingbacon.bcnlib.framework.PIDController;
 import com.explodingbacon.bcnlib.framework.RobotCore;
-import com.explodingbacon.bcnlib.utils.Utils;
 import com.explodingbacon.bcnlib.vision.Vision;
 import com.explodingbacon.steambot.commands.DriveCommand;
 import com.explodingbacon.steambot.subsystems.DriveSubsystem;
@@ -55,7 +53,7 @@ public class Robot extends RobotCore {
 
         vision.setRingLight(true);
 
-        Log.d("BNO sensor present: " + Robot.drive.gyro.isPresent() + ", calibrated: " + Robot.drive.gyro.isCalibrated());
+        Log.d("BNO sensor present: " + Robot.drive.gyro.isPresent());
 
         Log.d("Enabled init");
     }
@@ -68,7 +66,7 @@ public class Robot extends RobotCore {
 
         //Log.d("Gyro: " + Robot.drive.gyro.getHeading() + ", cal: " + Robot.drive.gyro.isCalibrated());
 
-        drive.rotatePID.logVerbose();
+        //drive.rotatePID.logVerbose();
 
         /*
         Log.d("FrontLeft: " + Robot.drive.frontLeftEncoder.get()  + ", BackLeft: " + Robot.drive.backLeftEncoder.get() +
