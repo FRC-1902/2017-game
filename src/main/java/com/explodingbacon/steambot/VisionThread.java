@@ -7,14 +7,18 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class VisionThread extends Thread {
 
-    public TargetMode mode = TargetMode.NONE;
+    private TargetMode mode = TargetMode.GEAR;
+    private boolean atTarget = false;
+    private Long timeOfTargetFind = null;
+    private double error = 0;
+
+    private double GEAR_PIXEL_ERROR = 20;
 
     @Override
     public void run() {
@@ -27,14 +31,16 @@ public class VisionThread extends Thread {
         CvSource outputStream = CameraServer.getInstance().putVideo("Vision", 320, 240);
 
         Image source = new Image();
-        Image output = new Image();
+        Image output;
 
         CameraSettings.setExposureAuto(1);
         CameraSettings.setExposure(9);
 
         //noinspection InfiniteLoopStatement
         while (true) {
+            long timeOfGet = System.currentTimeMillis();
             cvSink.grabFrame(source.getMat());
+            //Log.v("Millis diff: " + (System.currentTimeMillis() - millis));
 
             output = source.copy();
             source.toHSV();
@@ -52,22 +58,45 @@ public class VisionThread extends Thread {
                 }
             }
 
-            if (correctContours.size() > 1) {
-                Contour target1 = null, target2 = null;
+            //System.out.println("Correct Contours: " + correctContours.size());
 
+            if (correctContours.size() > 0) {
                 //TODO: make sure this sorting puts the highest area contours at the top of the list
                 Collections.sort(correctContours, (o1, o2) -> Utils.round(o1.getArea() - o2.getArea()));
 
-                target1 = correctContours.get(0);
-                target2 = correctContours.get(1);
-                //Contour[] targets = {target1, target2};
+                Contour target1 = correctContours.get(0);
+
                 double inchesPerPixel;
 
                 if (mode == TargetMode.GEAR) {
-                    //Target is two inches wide, so half of it's width is the inch-to-pixel ratio
-                    //TODO: Which target to use? Average the two together? Test what's accurate
-                    inchesPerPixel = target1.getWidth() / 2;
-
+                    double aligned = (source.getWidth() / 2) + 10;
+                    if (correctContours.size() == 2) {
+                        Contour target2 = correctContours.get(1);
+                        double targetPos = (target1.getMiddleX() + target2.getMiddleX()) / 2;
+                        error = aligned - targetPos;
+                        double width = (target1.getWidth() + target2.getWidth()) / 2;
+                        //GEAR_PIXEL_ERROR = width * 1.5;
+                        GEAR_PIXEL_ERROR = Math.abs(target1.getMiddleX() - target2.getMiddleX()) / 2;
+                        if (Math.abs(error) <= GEAR_PIXEL_ERROR) {
+                            if (!atTarget) {
+                                timeOfTargetFind = timeOfGet;
+                            }
+                            atTarget = true;
+                        } else {
+                            atTarget = false;
+                            timeOfTargetFind = null;
+                        }
+                        output.drawLine(Utils.round(targetPos), Color.YELLOW);
+                    }
+                    Color lines;
+                    if (atTarget) {
+                        lines = Color.ORANGE;
+                    } else {
+                        lines = Color.PURPLE;
+                    }
+                    output.drawLine(Utils.round(aligned - GEAR_PIXEL_ERROR), lines);
+                    output.drawLine(Utils.round(aligned + GEAR_PIXEL_ERROR), lines);
+                    output.drawLine(Utils.round(aligned), lines);
                 }
             }
 
@@ -75,6 +104,72 @@ public class VisionThread extends Thread {
 
             outputStream.putFrame(output.getMat());
 
+        }
+    }
+
+    /**
+     * Gets the difference between the desired position and the current position of the target.
+     *
+     * @return The difference between the desired position and the current position of the target.
+     */
+    public double getError() {
+        return error;
+    }
+
+    /**
+     * Gets which target this VisionThread is currently looking for.
+     *
+     * @return Which target this VisionThread is currently looking for.
+     */
+    public TargetMode getTargetMode() {
+        return mode;
+    }
+
+    public Long getTimeOfTargetFind() {
+        return timeOfTargetFind;
+    }
+
+    /**
+     * Checks if we are at the desired target.
+     *
+     * @return If we are at the desired target.
+     */
+    public boolean isAtTarget() {
+        return atTarget;
+    }
+
+    //TODO: is there any chance of flicker from false to true to false again because threading? Synchronize?
+
+    /**
+     * Sets the new desired target.
+     *
+     * @param m The new desired target.
+     */
+    public void setTarget(TargetMode m) {
+        mode = m;
+        atTarget = false;
+    }
+
+    /**
+     * Waits until we are at the new desired target.
+     *
+     * @param m The new desired target.
+     */
+    public void waitForAtTarget(TargetMode m) {
+        setTarget(m);
+        waitForAtTarget();
+    }
+
+    /**
+     * Waits until we are at the desired target.
+     */
+    public void waitForAtTarget() {
+        while (!isAtTarget()) {
+            try {
+                Thread.sleep(10);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

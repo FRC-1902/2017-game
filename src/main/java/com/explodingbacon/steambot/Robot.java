@@ -18,6 +18,7 @@ package com.explodingbacon.steambot;
 import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.framework.RobotCore;
 import com.explodingbacon.bcnlib.vision.Vision;
+import com.explodingbacon.steambot.commands.AutonomousCommand;
 import com.explodingbacon.steambot.commands.DriveCommand;
 import com.explodingbacon.steambot.subsystems.DriveSubsystem;
 import com.explodingbacon.steambot.subsystems.VisionSubsystem;
@@ -28,7 +29,8 @@ public class Robot extends RobotCore {
     private OI oi;
     public static DriveSubsystem drive;
     public static VisionSubsystem vision;
-    private VisionThread visionThread = new VisionThread();
+    public static VisionThread visionThread = new VisionThread();
+    public static PositionLogThread positionLog = new PositionLogThread();
 
     public Robot(IterativeRobot r) {
         super(r);
@@ -41,6 +43,8 @@ public class Robot extends RobotCore {
         vision = new VisionSubsystem();
 
         if (Vision.isInit()) visionThread.start();
+
+        positionLog.start();
 
         Log.i("Pork Lift II initialized.");
     }
@@ -73,6 +77,7 @@ public class Robot extends RobotCore {
         ", FrontRight: " + Robot.drive.frontRightEncoder.get() + ", BackRight: " + Robot.drive.backRightEncoder.get());
         */
 
+        //drive.strafePID.log();
 
         /*
         Log.d("LeftMotors speed: " + fL.getMotorPower() + ", Error: " + fL.getCurrentError() +
@@ -84,17 +89,14 @@ public class Robot extends RobotCore {
     public void autonomousInit() {
         super.autonomousInit();
 
-        Log.d("Autonomous init");
+        OI.runCommand(new AutonomousCommand());
 
-        double testDistance = Robot.drive.inchesToStrafeEncoder(24);
-        Log.d("Drive distance: " + testDistance);
-        Robot.drive.set(0, 0, testDistance);
+        Log.d("Autonomous init");
     }
 
     @Override
     public void autonomousPeriodic() {
         super.autonomousPeriodic();
-        Robot.drive.strafePID.logVerbose();
     }
 
     @Override
@@ -114,13 +116,16 @@ public class Robot extends RobotCore {
     @Override
     public void testInit() {
         super.testInit();
+        drive.strafePID.disable();
+        drive.strafePID.resetSource();
+        drive.strafePID.enable();
+        drive.strafePID.setTarget(drive.inchesToStrafeEncoder(6));
     }
 
     @Override
     public void testPeriodic() {
         super.testPeriodic();
 
-        int angle = OI.drive.a.get() ? 90 : 270;
-        Robot.drive.fieldCentricAbsoluteAngleDrive(0, 0, angle);
+        drive.keepHeading(0);
     }
 }

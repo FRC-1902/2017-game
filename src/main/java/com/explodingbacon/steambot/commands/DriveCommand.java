@@ -36,7 +36,7 @@ public class DriveCommand extends Command {
     @Override
     public void onLoop() {
         joyX = drive.getX();
-        joyY = drive.getY();
+        joyY = -drive.getY();
         joyZ = -drive.getX2();
 
         joyX = Math.pow(joyX, 2) * Utils.sign(joyX);
@@ -101,7 +101,7 @@ public class DriveCommand extends Command {
             angle = angle - 360;
         }
 
-        Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
+        Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle, true);
     }
 
     @Override
