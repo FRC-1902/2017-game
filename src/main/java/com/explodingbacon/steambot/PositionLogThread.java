@@ -14,18 +14,27 @@ public class PositionLogThread extends CodeThread {
 
     @Override
     public void code() {
-        strafePositions.put(System.currentTimeMillis(), Robot.drive.strafeEncoder.get());
+        synchronized (STRAFE_POSITIONS_USE) {
+            strafePositions.put(System.currentTimeMillis(), Robot.drive.strafeEncoder.get());
+        }
         List<Long> longsToDelete = new ArrayList<>();
-        for (Long l : strafePositions.keySet()) {
-            if ((System.currentTimeMillis() - l) >= 2000) {
-                //strafePositions.remove(l);
-                longsToDelete.add(l);
+        synchronized (STRAFE_POSITIONS_USE) {
+            for (Long l : strafePositions.keySet()) {
+                if ((System.currentTimeMillis() - l) >= 2000) {
+                    //strafePositions.remove(l);
+                    longsToDelete.add(l);
+                }
             }
         }
-        synchronized (STRAFE_POSITIONS_USE) {
-            for (Long l : longsToDelete) {
+        for (Long l : longsToDelete) {
+            synchronized (STRAFE_POSITIONS_USE) {
                 strafePositions.remove(l);
             }
+        }
+        try {
+            Thread.sleep(5);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

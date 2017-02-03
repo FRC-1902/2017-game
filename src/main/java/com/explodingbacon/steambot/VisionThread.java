@@ -18,7 +18,8 @@ public class VisionThread extends Thread {
     private Long timeOfTargetFind = null;
     private double error = 0;
 
-    private double GEAR_PIXEL_ERROR = 20;
+    private final double TARGET_POS_OFFSET = 10;
+    private double gearPixelError;
 
     @Override
     public void run() {
@@ -69,15 +70,15 @@ public class VisionThread extends Thread {
                 double inchesPerPixel;
 
                 if (mode == TargetMode.GEAR) {
-                    double aligned = (source.getWidth() / 2) + 10;
+                    double aligned = (source.getWidth() / 2) + TARGET_POS_OFFSET;
                     if (correctContours.size() == 2) {
                         Contour target2 = correctContours.get(1);
                         double targetPos = (target1.getMiddleX() + target2.getMiddleX()) / 2;
                         error = aligned - targetPos;
                         double width = (target1.getWidth() + target2.getWidth()) / 2;
-                        //GEAR_PIXEL_ERROR = width * 1.5;
-                        GEAR_PIXEL_ERROR = Math.abs(target1.getMiddleX() - target2.getMiddleX()) / 2;
-                        if (Math.abs(error) <= GEAR_PIXEL_ERROR) {
+                        //gearPixelError = width * 1.5;
+                        gearPixelError = Math.abs(target1.getMiddleX() - target2.getMiddleX()) / 2;
+                        if (Math.abs(error) <= gearPixelError) {
                             if (!atTarget) {
                                 timeOfTargetFind = timeOfGet;
                             }
@@ -86,6 +87,7 @@ public class VisionThread extends Thread {
                             atTarget = false;
                             timeOfTargetFind = null;
                         }
+                        output.drawLine(Utils.round(targetPos - TARGET_POS_OFFSET), Color.WHITE);
                         output.drawLine(Utils.round(targetPos), Color.YELLOW);
                     }
                     Color lines;
@@ -94,8 +96,8 @@ public class VisionThread extends Thread {
                     } else {
                         lines = Color.PURPLE;
                     }
-                    output.drawLine(Utils.round(aligned - GEAR_PIXEL_ERROR), lines);
-                    output.drawLine(Utils.round(aligned + GEAR_PIXEL_ERROR), lines);
+                    output.drawLine(Utils.round(aligned - gearPixelError), lines);
+                    output.drawLine(Utils.round(aligned + gearPixelError), lines);
                     output.drawLine(Utils.round(aligned), lines);
                 }
             }

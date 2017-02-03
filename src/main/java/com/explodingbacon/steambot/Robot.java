@@ -20,17 +20,25 @@ import com.explodingbacon.bcnlib.framework.RobotCore;
 import com.explodingbacon.bcnlib.vision.Vision;
 import com.explodingbacon.steambot.commands.AutonomousCommand;
 import com.explodingbacon.steambot.commands.DriveCommand;
+import com.explodingbacon.steambot.commands.GearCommand;
 import com.explodingbacon.steambot.subsystems.DriveSubsystem;
+import com.explodingbacon.steambot.subsystems.GearSubsystem;
 import com.explodingbacon.steambot.subsystems.VisionSubsystem;
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.networktables.NetworkTable;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Robot extends RobotCore {
 
     private OI oi;
     public static DriveSubsystem drive;
     public static VisionSubsystem vision;
+    public static GearSubsystem gear;
+    public static LiftSubsystem lift;
     public static VisionThread visionThread = new VisionThread();
     public static PositionLogThread positionLog = new PositionLogThread();
+    public static SendableChooser auto;
 
     public Robot(IterativeRobot r) {
         super(r);
@@ -41,10 +49,19 @@ public class Robot extends RobotCore {
 
         drive = new DriveSubsystem();
         vision = new VisionSubsystem();
+        gear = new GearSubsystem();
+        lift = new LiftSubsystem();
 
         if (Vision.isInit()) visionThread.start();
 
         positionLog.start();
+
+        auto = new SendableChooser();
+        auto.initTable(NetworkTable.getTable("BaconTable"));
+        auto.addDefault("Front", "front");
+        auto.addObject("Left", "left");
+        auto.addObject("Right", "right");
+        SmartDashboard.putData("Autonomous Picker", auto);
 
         Log.i("Pork Lift II initialized.");
     }
@@ -104,6 +121,8 @@ public class Robot extends RobotCore {
         super.teleopInit();
 
         OI.runCommand(new DriveCommand());
+        OI.runCommand(new GearCommand());
+        OI.runCommand(new LiftCommand());
 
         Log.d("Teleop init");
     }

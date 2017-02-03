@@ -15,7 +15,6 @@ import java.util.List;
 
 public class DriveSubsystem extends Subsystem {
 
-    private static final boolean USE_PIDs = false;
     private Double GLOBAL_MIN = 0.2;
 
     private MotorGroup leftMotors, rightMotors, strafeMotors;
@@ -96,16 +95,7 @@ public class DriveSubsystem extends Subsystem {
         backLeftEncoder.reset();
         frontRightEncoder.reset();
         backRightEncoder.reset();
-
-        if (USE_PIDs) {
-            /*
-            frontLeftPID.enable();
-            backLeftPID.enable();
-            frontRightPID.enable();
-            backRightPID.enable();
-            */
-            strafePID.enable();
-        }
+        strafeEncoder.reset();
     }
 
     @Override
@@ -152,17 +142,9 @@ public class DriveSubsystem extends Subsystem {
      * @param strafePow Horizontal Strafing Power
      */
     public void set(double leftPow, double rightPow, Double strafePow) {
-        if (USE_PIDs) {
-            frontLeftPID.setTarget(leftPow);
-            backLeftPID.setTarget(leftPow);
-            frontRightPID.setTarget(rightPow);
-            backRightPID.setTarget(rightPow);
-            if (strafePow != null) strafePID.setTarget(strafePow);
-        } else {
-            leftMotors.setPower(leftPow);
-            rightMotors.setPower(rightPow);
-            if (strafePow != null) strafeMotors.setPower(strafePow);
-        }
+        leftMotors.setPower(leftPow);
+        rightMotors.setPower(rightPow);
+        if (strafePow != null) strafeMotors.setPower(strafePow);
     }
 
     private void setFiltered(double leftPower, double rightPower, double strafePower, boolean useStrafe) {
@@ -216,12 +198,13 @@ public class DriveSubsystem extends Subsystem {
      * @param y     Y power, -1 to 1
      * @param angle Desired angle, 0 to 360 (degrees)
      */
-    public void xyzAbsoluteAngleDrive(double x, double y, double angle) {
+    public void xyzAbsoluteAngleDrive(double x, double y, double angle, boolean useStrafe) {
         if (!rotatePID.isEnabled()) rotatePID.enable();
+        y = -y;
         rotatePID.setTarget(angle);
         double z = rotatePidOutput.getPower();
 
-        setFiltered(y + z, y - z, x, true);
+        setFiltered(y + z, z - y, x, useStrafe);
     }
 
     /**
