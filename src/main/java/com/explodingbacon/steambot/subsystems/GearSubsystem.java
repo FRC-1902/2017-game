@@ -4,7 +4,6 @@ import com.explodingbacon.bcnlib.actuators.Motor;
 import com.explodingbacon.bcnlib.actuators.Solenoid;
 import com.explodingbacon.bcnlib.framework.Subsystem;
 import com.explodingbacon.steambot.Map;
-
 import java.util.List;
 
 public class GearSubsystem extends Subsystem {

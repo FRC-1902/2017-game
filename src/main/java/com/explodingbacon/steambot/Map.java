@@ -16,6 +16,14 @@ public class Map {
     public static int LIFT_DRIVE_1 = 6;
     public static int LIFT_DRIVE_2 = 7;
 
+    public static int DISTURBER = 8;
+    public static int INDEXER = 9;
+
+    //CAN
+
+    public static int SHOOTER_1 = 0;
+    public static int SHOOTER_2 = 1;
+
     //DIO
     public static int FRONT_LEFT_ENC_A = 4;
     public static int FRONT_LEFT_ENC_B = 5;
@@ -30,6 +38,9 @@ public class Map {
 
     public static int LIFT_ENC_A = -1; //?
     public static int LIFT_ENC_B = -1;//also ?
+
+    public static int SHOOT_ENC_A = -1; //?
+    public static int SHOOT_ENC_B = -1; //also ?
 
     //Solenoid
     public static int LEFT_SOL = 0;

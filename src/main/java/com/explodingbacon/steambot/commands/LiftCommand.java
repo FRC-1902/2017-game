@@ -1,8 +1,10 @@
-package com.explodingbacon.steambot;
+package com.explodingbacon.steambot.commands;
 
-import com.explodingbacon.bcnlib.actuators.MotorGroup;
 import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.Command;
+import com.explodingbacon.steambot.OI;
+import com.explodingbacon.steambot.Robot;
+import com.explodingbacon.steambot.subsystems.LiftSubsystem;
 
 /**
  * Created by LenovoBacon1 on 2/2/2017.

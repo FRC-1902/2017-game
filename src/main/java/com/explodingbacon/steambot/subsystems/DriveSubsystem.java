@@ -244,6 +244,8 @@ public class DriveSubsystem extends Subsystem {
         xSet = y * Math.sin(angle) + x * Math.cos(angle);
         ySet = y * Math.cos(angle) - x * Math.sin(angle);
 
+        //theoretically, ySet should be equal to y/cos, and xSet should be equal to x/sin
+
         setFiltered(ySet + z, z - ySet, xSet, useStrafe);
     }
 
@@ -261,10 +263,7 @@ public class DriveSubsystem extends Subsystem {
      * @param inches The inches to be converted.
      * @return The encoder clicks equivalent to the inches provided.
      */
-    //TODO: This is the math from 2015, double check it's correct
-    /*public double inchesToDriveEncoder(double inches) {
-        return inches / (Math.PI * 4) * 444.4444444444444;
-    }*/
+    //TODO: This is the math from 2015, double check it's correct. UPDATE: Seems to be correct
     public double inchesToDriveEncoder(double inches) {
         return inches / (Math.PI * 4) * (444 + (4/9));
     }

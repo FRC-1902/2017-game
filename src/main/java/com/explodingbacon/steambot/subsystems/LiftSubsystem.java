@@ -1,4 +1,4 @@
-package com.explodingbacon.steambot;
+package com.explodingbacon.steambot.subsystems;
 
 import com.explodingbacon.bcnlib.actuators.Motor;
 import com.explodingbacon.bcnlib.actuators.MotorGroup;
@@ -6,6 +6,7 @@ import com.explodingbacon.bcnlib.framework.PIDController;
 import com.explodingbacon.bcnlib.framework.Subsystem;
 import com.explodingbacon.bcnlib.sensors.AbstractEncoder;
 import com.explodingbacon.bcnlib.sensors.Encoder;
+import com.explodingbacon.steambot.Map;
 import edu.wpi.first.wpilibj.VictorSP;
 import java.util.List;
 
@@ -27,7 +28,6 @@ public class LiftSubsystem extends Subsystem {
     @Override
     public void enabledInit() {
         liftEncoder.reset();
-
         liftPID.enable();
     }
 
@@ -46,9 +46,7 @@ public class LiftSubsystem extends Subsystem {
         return null;
     }
 
-    public void set(double power){
-        liftPID.setTarget(power);
-    }
+    public void set(double power){liftPID.setTarget(power);}
 
     public double get(){
         return liftEncoder.get();
