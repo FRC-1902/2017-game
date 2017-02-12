@@ -8,12 +8,8 @@ import com.explodingbacon.bcnlib.framework.PIDController;
 import com.explodingbacon.bcnlib.framework.Subsystem;
 import com.explodingbacon.bcnlib.sensors.Encoder;
 import com.explodingbacon.steambot.Map;
-
 import java.util.List;
 
-/**
- * Created by LenovoBacon1 on 2/4/2017.
- */
 public class ShooterSubsystem extends Subsystem {
     private MotorGroup shooter;
     private Motor disturber, indexer;

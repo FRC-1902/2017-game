@@ -4,11 +4,11 @@ public class Map {
 
     //PWM
 
-    public static int LEFT_DRIVE_1 = 0;
-    public static int LEFT_DRIVE_2 = 1;
+    public static int LEFT_DRIVE_1 = 3;
+    public static int LEFT_DRIVE_2 = 2;
 
-    public static int RIGHT_DRIVE_1 = 2;
-    public static int RIGHT_DRIVE_2 = 3;
+    public static int RIGHT_DRIVE_1 = 8;
+    public static int RIGHT_DRIVE_2 = 9;
 
     public static int STRAFE_DRIVE_1 = 4;
     public static int STRAFE_DRIVE_2 = 5;
@@ -16,8 +16,8 @@ public class Map {
     public static int LIFT_DRIVE_1 = 6;
     public static int LIFT_DRIVE_2 = 7;
 
-    public static int DISTURBER = 8;
-    public static int INDEXER = 9;
+    public static int DISTURBER = 0;
+    public static int INDEXER = 1;
 
     //CAN
 
@@ -25,6 +25,7 @@ public class Map {
     public static int SHOOTER_2 = 1;
 
     //DIO
+    /*
     public static int FRONT_LEFT_ENC_A = 4;
     public static int FRONT_LEFT_ENC_B = 5;
     public static int BACK_LEFT_ENC_A = 6;
@@ -33,8 +34,10 @@ public class Map {
     public static int FRONT_RIGHT_ENC_B = 1;
     public static int BACK_RIGHT_ENC_A = 2;
     public static int BACK_RIGHT_ENC_B = 3;
-    public static int STRAFE_ENC_A = 8;
-    public static int STRAFE_ENC_B = 9;
+    */
+    public static int STRAFE_ENC_A = 0;
+    public static int STRAFE_ENC_B = 1;
+    public static int GEAR_LIMIT = 2;
 
     public static int LIFT_ENC_A = -1; //?
     public static int LIFT_ENC_B = -1;//also ?
@@ -43,12 +46,7 @@ public class Map {
     public static int SHOOT_ENC_B = -1; //also ?
 
     //Solenoid
-    public static int LEFT_SOL = 0;
-    public static int RIGHT_SOL = 1;
-
-    //Sensor
-    public static int GEAR_LIMIT = 0;
-
-    public static int RING_LIGHT = 0;
+    public static int LEFT_SOL = 1;
+    public static int RING_LIGHT = 7;
 
 }

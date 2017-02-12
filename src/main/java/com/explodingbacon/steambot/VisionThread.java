@@ -13,16 +13,19 @@ import java.util.List;
 
 public class VisionThread extends Thread {
 
+    private Image goalSample;
     private TargetMode mode = TargetMode.GEAR;
     private boolean atTarget = false;
     private Long timeOfTargetFind = null;
     private double error = 0;
 
-    private final double TARGET_POS_OFFSET = 10;
+    private final double TARGET_POS_OFFSET = -33; //-28
     private double gearPixelError;
 
     @Override
     public void run() {
+        //goalSample = Image.fromFile("/home/lvuser/images/goal_sample.png").inRange(new Color(244, 244, 244), new Color(255, 255, 255));
+
         Log.v("Vision thread running.");
         UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
         camera.setFPS(5);
@@ -34,13 +37,15 @@ public class VisionThread extends Thread {
         Image source = new Image();
         Image output;
 
-        CameraSettings.setExposureAuto(1);
-        CameraSettings.setExposure(9);
+        //CameraSettings.setExposureAuto(1);
+        //CameraSettings.setExposure(9);
 
         //noinspection InfiniteLoopStatement
         while (true) {
+            //TODO: see if grabbing the encoder value pre-picture taking then passing that on is more accurate than the current method
             long timeOfGet = System.currentTimeMillis();
             cvSink.grabFrame(source.getMat());
+
             //Log.v("Millis diff: " + (System.currentTimeMillis() - millis));
 
             output = source.copy();
@@ -54,7 +59,7 @@ public class VisionThread extends Thread {
             List<Contour> correctContours = new ArrayList<>();
 
             for (Contour c : allContours) {
-                if (c.getArea() > 30) {
+                if (c.getArea() > 100 && c.getArea() < 2500 && c.getY() > (source.getHeight() / 3)) {
                     correctContours.add(c);
                 }
             }
@@ -70,11 +75,18 @@ public class VisionThread extends Thread {
                 double inchesPerPixel;
 
                 if (mode == TargetMode.GEAR) {
-                    double aligned = (source.getWidth() / 2) + TARGET_POS_OFFSET;
+                    /*
+                    if (OI.manipulator.rightJoyButton.get()) {
+                        Log.d("PIC");
+                        source.saveAs("home/lvuser/sample.png");
+                    }
+                    */
+                    double aligned = (source.getWidth() / 2) - TARGET_POS_OFFSET;
                     if (correctContours.size() == 2) {
                         Contour target2 = correctContours.get(1);
                         double targetPos = (target1.getMiddleX() + target2.getMiddleX()) / 2;
                         error = aligned - targetPos;
+                        Log.d("ERROR IN PIXELS: " + error);
                         double width = (target1.getWidth() + target2.getWidth()) / 2;
                         //gearPixelError = width * 1.5;
                         gearPixelError = Math.abs(target1.getMiddleX() - target2.getMiddleX()) / 2;
@@ -87,8 +99,10 @@ public class VisionThread extends Thread {
                             atTarget = false;
                             timeOfTargetFind = null;
                         }
-                        output.drawLine(Utils.round(targetPos - TARGET_POS_OFFSET), Color.WHITE);
+
+                        output.drawLine(Utils.round(aligned + TARGET_POS_OFFSET), Color.WHITE);
                         output.drawLine(Utils.round(targetPos), Color.YELLOW);
+
                     }
                     Color lines;
                     if (atTarget) {

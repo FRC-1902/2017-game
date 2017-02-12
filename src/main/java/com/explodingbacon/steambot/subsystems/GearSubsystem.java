@@ -3,23 +3,25 @@ package com.explodingbacon.steambot.subsystems;
 import com.explodingbacon.bcnlib.actuators.Motor;
 import com.explodingbacon.bcnlib.actuators.Solenoid;
 import com.explodingbacon.bcnlib.framework.Subsystem;
+import com.explodingbacon.bcnlib.sensors.DigitalInput;
 import com.explodingbacon.steambot.Map;
 import java.util.List;
 
 public class GearSubsystem extends Subsystem {
-    private Solenoid lSol, rSol;
+    private Solenoid lSol/*, rSol*/;
+    private DigitalInput touch;
     //private Thread watchdogThread;
 
     public GearSubsystem() {
         lSol = new Solenoid(Map.LEFT_SOL);
-        rSol = new Solenoid(Map.RIGHT_SOL);
+        touch = new DigitalInput(Map.GEAR_LIMIT);
+        //rSol = new Solenoid(Map.RIGHT_SOL);
     }
 
 
     @Override
     public void enabledInit() {
-        lSol.set(false);
-        rSol.set(false);
+        setDeployed(false);
     }
 
     @Override
@@ -37,11 +39,14 @@ public class GearSubsystem extends Subsystem {
         return null;
     }
 
+    public boolean getTouchSensor() {
+        return !touch.get();
+    }
+
     public void setDeployed(boolean val){
-        rSol.set(val);
+        //val = !val;
         lSol.set(val);
     }
 
-    public Solenoid getlSol(){return lSol;}
-    public Solenoid getrSol(){return rSol;}
+    public Solenoid getSol(){return lSol;}
 }

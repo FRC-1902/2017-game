@@ -18,12 +18,12 @@ public class DriveSubsystem extends Subsystem {
     private Double GLOBAL_MIN = 0.2;
 
     private MotorGroup leftMotors, rightMotors, strafeMotors;
-    private Motor frontLeft, backLeft, frontRight, backRight;
-    public Encoder frontLeftEncoder, backLeftEncoder, frontRightEncoder, backRightEncoder, strafeEncoder;
+    //private Motor frontLeft, backLeft, frontRight, backRight;
+    public Encoder /*frontLeftEncoder, backLeftEncoder, frontRightEncoder, backRightEncoder,*/ strafeEncoder;
 
     public BNOGyro gyro;
 
-    public PIDController frontLeftPID, backLeftPID, frontRightPID, backRightPID, strafePID, rotatePID;
+    public PIDController/* frontLeftPID, backLeftPID, frontRightPID, backRightPID,*/ strafePID, rotatePID;
     private FakeMotor rotatePidOutput;
 
     private Thread watchdogThread;
@@ -31,9 +31,11 @@ public class DriveSubsystem extends Subsystem {
 
     private final Integer MAX_DRIVE = 100; //TODO: This
     private final Integer MAX_STRAFE = 100; //TODO: This
+    /*
     private final Double driveKP = 0.005d; //TODO: This. 0.001 is safe but slow
     private final Double driveKI = 0d; //TODO: This
     private final Double driveKD = 0d; //TODO: This
+    */
 
     public DriveSubsystem() {
         leftMotors = new MotorGroup(VictorSP.class, Map.LEFT_DRIVE_1, Map.LEFT_DRIVE_2);
@@ -41,10 +43,15 @@ public class DriveSubsystem extends Subsystem {
         strafeMotors = new MotorGroup(VictorSP.class, Map.STRAFE_DRIVE_1, Map.STRAFE_DRIVE_2);
         strafeMotors.setInverts(false, false);
 
+        leftMotors.setReversed(false);
+        rightMotors.setReversed(false);
+
+        /*
         frontLeft = leftMotors.getMotors().get(0);
         backLeft = leftMotors.getMotors().get(1);
         frontRight = rightMotors.getMotors().get(0);
         backRight = rightMotors.getMotors().get(1);
+        */
 
         gyro = new BNOGyro(true);
 
@@ -52,58 +59,72 @@ public class DriveSubsystem extends Subsystem {
 
         rotatePidOutput = new FakeMotor();
 
+        /*
         frontLeftEncoder = new Encoder(Map.FRONT_LEFT_ENC_A, Map.FRONT_LEFT_ENC_B);
         backLeftEncoder = new Encoder(Map.BACK_LEFT_ENC_A, Map.BACK_LEFT_ENC_B);
         frontRightEncoder = new Encoder(Map.FRONT_RIGHT_ENC_A, Map.FRONT_RIGHT_ENC_B);
         backRightEncoder = new Encoder(Map.BACK_RIGHT_ENC_A, Map.BACK_RIGHT_ENC_B);
+        */
         strafeEncoder = new Encoder(Map.STRAFE_ENC_A, Map.STRAFE_ENC_B);
 
+        /*
         frontLeftEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
         backLeftEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
         frontRightEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
         backRightEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
+        */
         strafeEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
 
+        /*
         frontLeftEncoder.setReversed(false);
         backLeftEncoder.setReversed(false);
         frontRightEncoder.setReversed(true);
         backRightEncoder.setReversed(true);
+        */
         strafeEncoder.setReversed(false);
 
+        /*
         frontLeftPID = new PIDController(frontLeft, frontLeftEncoder, driveKP, driveKI, driveKD);
         backLeftPID = new PIDController(backLeft, backLeftEncoder, driveKP, driveKI, driveKD);
         frontRightPID = new PIDController(frontRight, frontRightEncoder, driveKP, driveKI, driveKD);
         backRightPID = new PIDController(backRight, backRightEncoder, driveKP, driveKI, driveKD);
-        strafePID = new PIDController(strafeMotors, strafeEncoder, 0.00048, 0.000012, 0.004, 0.05, 1);
+        */
+        //0.00048, 0.000012, 0.004, 0.05, 1);
+        //0.00088
+        strafePID = new PIDController(strafeMotors, strafeEncoder, 0.001, 0.000012, 0.004, 0.05, 1);
         rotatePID = new PIDController(rotatePidOutput, gyro, 0.015, 0.0008, 0.09, 0.15, 1)
                 .setRotational(true); //TODO: Tune
 
-        frontLeftPID.setInputInverted(true);
-        backLeftPID.setInputInverted(true);
+        //frontLeftPID.setInputInverted(true);
+        //backLeftPID.setInputInverted(true);
         rotatePID.setInputInverted(true);
 
         //Good-enough rotatePID values for field-centric stuff: 0.01, 0.0001, 0.02, 0.0, 0.5
 
-        strafePID.setFinishedTolerance(3);
+        strafePID.setFinishedTolerance(2);
 
         lastSet = System.currentTimeMillis();
         watchdogThread.start();
     }
 
     public void enabledInit() {
+        /*
         frontLeftEncoder.reset();
         backLeftEncoder.reset();
         frontRightEncoder.reset();
         backRightEncoder.reset();
+        */
         strafeEncoder.reset();
     }
 
     @Override
     public void disabledInit() {
+        /*
         frontLeftPID.disable();
         backLeftPID.disable();
         frontRightPID.disable();
         backRightPID.disable();
+        */
         strafePID.disable();
     }
 
@@ -267,8 +288,6 @@ public class DriveSubsystem extends Subsystem {
     public double inchesToDriveEncoder(double inches) {
         return inches / (Math.PI * 4) * (444 + (4/9));
     }
-
-
 
     /**
      * Converts inches to strafe encoder clicks.

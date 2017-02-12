@@ -1,30 +1,53 @@
 package com.explodingbacon.steambot.commands;
 
-import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.Command;
-import com.explodingbacon.bcnlib.sensors.DigitalInput;
-import com.explodingbacon.steambot.Map;
+import com.explodingbacon.bcnlib.framework.Log;
+import com.explodingbacon.bcnlib.utils.Utils;
 import com.explodingbacon.steambot.OI;
 import com.explodingbacon.steambot.Robot;
 import com.explodingbacon.steambot.subsystems.GearSubsystem;
 
 public class GearCommand extends Command {
-    private XboxController controller;
     private GearSubsystem gearSubsystem;
-    private DigitalInput limit;
 
     @Override
     public void onInit() {
-        controller = OI.manipulator;
-        limit = new DigitalInput(Map.GEAR_LIMIT);
-
         gearSubsystem = Robot.gear;
     }
 
     @Override
     public void onLoop() {
-        if(limit.get() || OI.gear.get()) gearSubsystem.setDeployed(true);
-        else gearSubsystem.setDeployed(false);
+        boolean pressed = gearSubsystem.getTouchSensor();
+        Log.d("Pressed: " + pressed);
+        if (Robot.isTeleop()) {
+            if ((pressed && OI.allowPressureGear.get())) {
+                //Log.d("ON");
+                gearSubsystem.setDeployed(true);
+                OI.drive.rumble(0.2f, 0.2f);
+                try {
+                    Thread.sleep(1000);
+                } catch (Exception e) {}
+            } else {
+                if(OI.gear.get() || OI.manipulator.leftTrigger.get()) {
+                    OI.drive.rumble(0.2f, 0.2f);
+                    gearSubsystem.setDeployed(true);
+                } else {
+                    OI.drive.rumble(0, 0);
+                    gearSubsystem.setDeployed(false);
+                }
+            }
+        } else if (Robot.isAutonomous()) {
+            if (pressed) {
+                //Log.d("PRESSURE PAD PRESSED");
+                gearSubsystem.setDeployed(true);
+                Utils.runInOwnThread(() -> {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (Exception e) {}
+                    gearSubsystem.setDeployed(false);
+                });
+            }
+        }
     }
 
     @Override

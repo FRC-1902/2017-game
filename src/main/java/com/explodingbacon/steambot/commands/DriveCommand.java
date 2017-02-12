@@ -1,14 +1,13 @@
 package com.explodingbacon.steambot.commands;
 
-import com.explodingbacon.bcnlib.actuators.Motor;
 import com.explodingbacon.bcnlib.actuators.MotorGroup;
-import com.explodingbacon.bcnlib.controllers.Joystick;
+import com.explodingbacon.bcnlib.controllers.LogitechController;
 import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.Command;
-import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.utils.Utils;
 import com.explodingbacon.steambot.OI;
 import com.explodingbacon.steambot.Robot;
+import edu.wpi.first.wpilibj.DriverStation;
 
 public class DriveCommand extends Command {
 
@@ -19,7 +18,7 @@ public class DriveCommand extends Command {
     private double joyX, joyY, joyZ;
     private MotorGroup left, right, strafe;
     private double angle = 0;
-    private XboxController drive;
+    private LogitechController drive;
 
     private boolean leftWasTrue = false, rightWasTrue = false;
 
@@ -30,6 +29,7 @@ public class DriveCommand extends Command {
         left = Robot.drive.getLeftMotors();
         right = Robot.drive.getRightMotors();
         strafe = Robot.drive.getStrafeMotors();
+
         drive = OI.drive;
     }
 
@@ -62,10 +62,10 @@ public class DriveCommand extends Command {
         strafe.setPower(joyX / scalar);
         */
 
-        if(drive.x.get()) angle = 270;
-        if(drive.y.get()) angle = 0;
-        if(drive.b.get()) angle = 90;
-        if(drive.a.get()) angle = 180;
+        if(drive.one.get()) angle = 270;
+        if(drive.four.get()) angle = 0;
+        if(drive.three.get()) angle = 90;
+        if(drive.two.get()) angle = 180;
 
         boolean left = drive.leftBumper.get();
         boolean right = drive.rightBumper.get();
@@ -79,6 +79,7 @@ public class DriveCommand extends Command {
         leftWasTrue = left;
         rightWasTrue = right;
 
+        /*
         double leftTrig = Utils.deadzone(drive.getLeftTrigger(), deadzone);
         double rightTrig = Utils.deadzone(drive.getRightTrigger(), deadzone);
 
@@ -94,6 +95,7 @@ public class DriveCommand extends Command {
 
         leftTrigWasTrue = leftTrig > 0;
         rightTrigWasTrue = rightTrig > 0;
+        */
 
         if (angle < 0) {
             angle = 360 + angle;
@@ -101,7 +103,19 @@ public class DriveCommand extends Command {
             angle = angle - 360;
         }
 
+        if(OI.drive.leftTrigger.get()) {
+            joyX *= 0.4;
+            joyY *= 0.4;
+            joyZ *= 0.4;
+        }
+
         Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle, true);
+
+        if (DriverStation.getInstance().getBatteryVoltage() <= 9) {
+            OI.manipulator.rumble(0.1f, 0.1f);
+        } else {
+            OI.manipulator.rumble(0, 0);
+        }
     }
 
     @Override

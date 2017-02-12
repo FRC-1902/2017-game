@@ -2,17 +2,20 @@ package com.explodingbacon.steambot;
 
 import com.explodingbacon.bcnlib.controllers.Button;
 import com.explodingbacon.bcnlib.controllers.JoystickButton;
+import com.explodingbacon.bcnlib.controllers.LogitechController;
 import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.AbstractOI;
+
+import javax.xml.ws.handler.LogicalHandler;
 
 public class OI extends AbstractOI {
 
     private static boolean isInit = false;
 
-    public static XboxController drive = null;
+    public static LogitechController drive = null;
     public static XboxController manipulator = null;
 
-    public static Button gear;
+    public static Button gear, allowPressureGear;
     public static Button liftStart, liftStop;
     public static Button shoot;
 
@@ -24,10 +27,13 @@ public class OI extends AbstractOI {
     public static void init() {
         isInit = true;
 
-        drive = new XboxController(0);
-        manipulator = new XboxController(1);
+        drive = new LogitechController(0);
+        manipulator = new XboxController(1); //port 1
 
-        gear = manipulator.rightTrigger;
+        gear = drive.rightTrigger;
+
+        allowPressureGear = manipulator.rightTrigger;
+
         liftStart = manipulator.a;
         liftStop = manipulator.y;
         shoot = manipulator.b;

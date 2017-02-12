@@ -1,8 +1,8 @@
 /**
- * CURRENTLY UNNAMED 2017 ROBOT -- (totally Pork Lift II though)
+ * Air Pork One
  *
  * This project was written and developed for the 2017 FIRST Robotics Competition game, "STEAMWORKS". All code used was
- * either written by team 1902 and/or is open-source and available to all teams.
+ * either written by team 1902 and/or was open-source and available to all teams.
  *
  * Written by:
  *
@@ -24,6 +24,7 @@ import com.explodingbacon.steambot.subsystems.GearSubsystem;
 import com.explodingbacon.steambot.subsystems.LiftSubsystem;
 import com.explodingbacon.steambot.subsystems.ShooterSubsystem;
 import com.explodingbacon.steambot.subsystems.VisionSubsystem;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -46,13 +47,13 @@ public class Robot extends RobotCore {
 
         oi = new OI();
 
-        Vision.init();
+        //Vision.init();
 
         drive = new DriveSubsystem();
         vision = new VisionSubsystem();
         gear = new GearSubsystem();
-        lift = new LiftSubsystem();
-        shooter = new ShooterSubsystem();
+        //lift = new LiftSubsystem();
+        //shooter = new ShooterSubsystem();
 
         if (Vision.isInit()) visionThread.start();
 
@@ -65,7 +66,7 @@ public class Robot extends RobotCore {
         auto.addObject("Right", "right");
         SmartDashboard.putData("Autonomous Picker", auto);
 
-        Log.i("Pork Lift II initialized.");
+        Log.i("Air Pork One initialized.");
     }
 
     @Override
@@ -78,6 +79,10 @@ public class Robot extends RobotCore {
 
         Log.d("BNO sensor present: " + Robot.drive.gyro.isPresent());
 
+        //Robot.drive.getLeftMotors().testEachWait(0.6, 0.5);
+        //Robot.drive.getRightMotors().testEachWait(0.6, 0.5);
+        //Robot.drive.getStrafeMotors().testEachWait(0.6, 0.5);
+
         Log.d("Enabled init");
     }
 
@@ -88,27 +93,16 @@ public class Robot extends RobotCore {
         //Log.d("Strafe Encoder: " + Robot.drive.strafeEncoder.get());
 
         //Log.d("Gyro: " + Robot.drive.gyro.getHeading() + ", cal: " + Robot.drive.gyro.isCalibrated());
-
-        //drive.rotatePID.logVerbose();
-
-        /*
-        Log.d("FrontLeft: " + Robot.drive.frontLeftEncoder.get()  + ", BackLeft: " + Robot.drive.backLeftEncoder.get() +
-        ", FrontRight: " + Robot.drive.frontRightEncoder.get() + ", BackRight: " + Robot.drive.backRightEncoder.get());
-        */
-
-        //drive.strafePID.log();
-
-        /*
-        Log.d("LeftMotors speed: " + fL.getMotorPower() + ", Error: " + fL.getCurrentError() +
-        ", done: " + fL.isDone() + ", enabled: " + fL.isEnabled());
-        */
     }
 
     @Override
     public void autonomousInit() {
         super.autonomousInit();
 
+        OI.runCommand(new GearCommand());
         OI.runCommand(new AutonomousCommand());
+
+        Log.d("ROBOT IS AUTO? " + isAutonomous());
 
         Log.d("Autonomous init");
     }
@@ -124,8 +118,10 @@ public class Robot extends RobotCore {
 
         OI.runCommand(new DriveCommand());
         OI.runCommand(new GearCommand());
-        OI.runCommand(new LiftCommand());
-        OI.runCommand(new ShooterCommand());
+
+        Log.d("TELEOP? " + isTeleop());
+        //OI.runCommand(new LiftCommand());
+        //OI.runCommand(new ShooterCommand());
 
         Log.d("Teleop init");
     }
@@ -136,18 +132,21 @@ public class Robot extends RobotCore {
     }
 
     @Override
+    public void disabledPeriodic() {
+        //Log.d("Strafe: " + drive.strafeEncoder.get());
+    }
+
+    @Override
     public void testInit() {
         super.testInit();
-        drive.strafePID.disable();
-        drive.strafePID.resetSource();
+        drive.strafeEncoder.reset();
         drive.strafePID.enable();
-        drive.strafePID.setTarget(drive.inchesToStrafeEncoder(6));
+        drive.strafePID.setTarget(drive.inchesToStrafeEncoder(0));
     }
 
     @Override
     public void testPeriodic() {
         super.testPeriodic();
-
-        drive.keepHeading(0);
+        drive.strafePID.logVerbose();
     }
 }
