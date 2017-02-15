@@ -65,7 +65,7 @@ public class DriveSubsystem extends Subsystem {
         frontRightEncoder = new Encoder(Map.FRONT_RIGHT_ENC_A, Map.FRONT_RIGHT_ENC_B);
         backRightEncoder = new Encoder(Map.BACK_RIGHT_ENC_A, Map.BACK_RIGHT_ENC_B);
         */
-        strafeEncoder = new Encoder(Map.STRAFE_ENC_A, Map.STRAFE_ENC_B);
+        strafeEncoder = new Encoder(Map.STRAFE_ENC_A, Map.STRAFE_ENC_B); //skrrrt
 
         /*
         frontLeftEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
@@ -312,3 +312,4 @@ public class DriveSubsystem extends Subsystem {
         return strafeMotors;
     }
 }
+

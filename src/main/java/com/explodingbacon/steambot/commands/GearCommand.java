@@ -18,7 +18,7 @@ public class GearCommand extends Command {
     @Override
     public void onLoop() {
         boolean pressed = gearSubsystem.getTouchSensor();
-        Log.d("Pressed: " + pressed);
+        //Log.d("Pressed: " + pressed);
         if (Robot.isTeleop()) {
             if ((pressed && OI.allowPressureGear.get())) {
                 //Log.d("ON");
@@ -28,7 +28,7 @@ public class GearCommand extends Command {
                     Thread.sleep(1000);
                 } catch (Exception e) {}
             } else {
-                if(OI.gear.get() || OI.manipulator.leftTrigger.get()) {
+                if(OI.gear.get() || OI.manipulator.leftTrigger.get()) { //TODO: PUT THIS IN OI
                     OI.drive.rumble(0.2f, 0.2f);
                     gearSubsystem.setDeployed(true);
                 } else {

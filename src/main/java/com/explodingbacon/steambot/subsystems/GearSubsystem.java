@@ -9,13 +9,12 @@ import java.util.List;
 
 public class GearSubsystem extends Subsystem {
     private Solenoid lSol/*, rSol*/;
-    private DigitalInput touch;
+    public DigitalInput touch;
     //private Thread watchdogThread;
 
     public GearSubsystem() {
         lSol = new Solenoid(Map.LEFT_SOL);
         touch = new DigitalInput(Map.GEAR_LIMIT);
-        //rSol = new Solenoid(Map.RIGHT_SOL);
     }
 
 
@@ -40,7 +39,7 @@ public class GearSubsystem extends Subsystem {
     }
 
     public boolean getTouchSensor() {
-        return !touch.get();
+        return touch.get();
     }
 
     public void setDeployed(boolean val){

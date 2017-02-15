@@ -39,14 +39,22 @@ public class PositionLogThread extends CodeThread {
     }
 
     public int getStrafeAt(Long time) {
-        Long closest = null;
+        Long above = Long.MAX_VALUE, below = Long.MIN_VALUE;
+
         synchronized (STRAFE_POSITIONS_USE) {
             for (Long l : strafePositions.keySet()) {
-                if (closest == null || Math.abs(time - l) < Math.abs(time - closest)) {
-                    closest = l;
-                }
+                if (l > below && l <= time)
+                    below = l;
+
+                if (l < above && l >= time)
+                    above = l;
             }
         }
-        return strafePositions.get(closest);
+
+        Long topDiff = above - time;
+        Long bottomDiff = time - below;
+
+        return (int) ((strafePositions.get(above) * bottomDiff + strafePositions.get(below) * topDiff)
+                / (bottomDiff + topDiff));
     }
 }

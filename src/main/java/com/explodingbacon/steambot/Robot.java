@@ -1,5 +1,10 @@
 /**
- * Air Pork One
+      ___    _         ____             __      ____
+    /   |  (_)____   / __ \____  _____/ /__   / __ \____  ___
+   / /| | / / ___/  / /_/ / __ \/ ___/ //_/  / / / / __ \/ _ \
+  / ___ |/ / /     / ____/ /_/ / /  / ,<    / /_/ / / / /  __/
+ /_/  |_/_/_/     /_/    \____/_/  /_/|_|   \____/_/ /_/\___/
+
  *
  * This project was written and developed for the 2017 FIRST Robotics Competition game, "STEAMWORKS". All code used was
  * either written by team 1902 and/or was open-source and available to all teams.
@@ -8,9 +13,9 @@
  *
  * Ryan Shavell
  * Dominic Canora
+ * Varun A.
  * Ruth Pearl
  * Adam C.
- * Varun A.
  */
 
 package com.explodingbacon.steambot;
@@ -79,10 +84,6 @@ public class Robot extends RobotCore {
 
         Log.d("BNO sensor present: " + Robot.drive.gyro.isPresent());
 
-        //Robot.drive.getLeftMotors().testEachWait(0.6, 0.5);
-        //Robot.drive.getRightMotors().testEachWait(0.6, 0.5);
-        //Robot.drive.getStrafeMotors().testEachWait(0.6, 0.5);
-
         Log.d("Enabled init");
     }
 
@@ -119,7 +120,7 @@ public class Robot extends RobotCore {
         OI.runCommand(new DriveCommand());
         OI.runCommand(new GearCommand());
 
-        Log.d("TELEOP? " + isTeleop());
+        //Log.d("TELEOP? " + isTeleop());
         //OI.runCommand(new LiftCommand());
         //OI.runCommand(new ShooterCommand());
 
@@ -128,7 +129,7 @@ public class Robot extends RobotCore {
 
     @Override
     public void teleopPeriodic() {
-
+        Log.d("Booped: " + gear.touch.get());
     }
 
     @Override
@@ -139,9 +140,10 @@ public class Robot extends RobotCore {
     @Override
     public void testInit() {
         super.testInit();
-        drive.strafeEncoder.reset();
-        drive.strafePID.enable();
-        drive.strafePID.setTarget(drive.inchesToStrafeEncoder(0));
+
+        Robot.drive.getLeftMotors().testEachWait(0.6, 0.5);
+        Robot.drive.getRightMotors().testEachWait(0.6, 0.5);
+        Robot.drive.getStrafeMotors().testEachWait(0.6, 0.5);
     }
 
     @Override
