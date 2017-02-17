@@ -3,6 +3,7 @@ package com.explodingbacon.steambot.subsystems;
 import com.explodingbacon.bcnlib.actuators.FakeMotor;
 import com.explodingbacon.bcnlib.actuators.Motor;
 import com.explodingbacon.bcnlib.actuators.MotorGroup;
+import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.framework.PIDController;
 import com.explodingbacon.bcnlib.framework.Subsystem;
 import com.explodingbacon.bcnlib.sensors.AbstractEncoder;
@@ -59,49 +60,19 @@ public class DriveSubsystem extends Subsystem {
 
         rotatePidOutput = new FakeMotor();
 
-        /*
-        frontLeftEncoder = new Encoder(Map.FRONT_LEFT_ENC_A, Map.FRONT_LEFT_ENC_B);
-        backLeftEncoder = new Encoder(Map.BACK_LEFT_ENC_A, Map.BACK_LEFT_ENC_B);
-        frontRightEncoder = new Encoder(Map.FRONT_RIGHT_ENC_A, Map.FRONT_RIGHT_ENC_B);
-        backRightEncoder = new Encoder(Map.BACK_RIGHT_ENC_A, Map.BACK_RIGHT_ENC_B);
-        */
-        strafeEncoder = new Encoder(Map.STRAFE_ENC_A, Map.STRAFE_ENC_B); //skrrrt
-
-        /*
-        frontLeftEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
-        backLeftEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
-        frontRightEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
-        backRightEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
-        */
+        strafeEncoder = new Encoder(Map.STRAFE_ENC_A, Map.STRAFE_ENC_B);
         strafeEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
-
-        /*
-        frontLeftEncoder.setReversed(false);
-        backLeftEncoder.setReversed(false);
-        frontRightEncoder.setReversed(true);
-        backRightEncoder.setReversed(true);
-        */
         strafeEncoder.setReversed(false);
 
-        /*
-        frontLeftPID = new PIDController(frontLeft, frontLeftEncoder, driveKP, driveKI, driveKD);
-        backLeftPID = new PIDController(backLeft, backLeftEncoder, driveKP, driveKI, driveKD);
-        frontRightPID = new PIDController(frontRight, frontRightEncoder, driveKP, driveKI, driveKD);
-        backRightPID = new PIDController(backRight, backRightEncoder, driveKP, driveKI, driveKD);
-        */
         //0.00048, 0.000012, 0.004, 0.05, 1);
         //0.00088
         strafePID = new PIDController(strafeMotors, strafeEncoder, 0.001, 0.000012, 0.004, 0.05, 1);
         rotatePID = new PIDController(rotatePidOutput, gyro, 0.015, 0.0008, 0.09, 0.15, 1)
                 .setRotational(true); //TODO: Tune
 
-        //frontLeftPID.setInputInverted(true);
-        //backLeftPID.setInputInverted(true);
         rotatePID.setInputInverted(true);
 
-        //Good-enough rotatePID values for field-centric stuff: 0.01, 0.0001, 0.02, 0.0, 0.5
-
-        strafePID.setFinishedTolerance(2);
+        rotatePID.setFinishedTolerance(1);
 
         lastSet = System.currentTimeMillis();
         watchdogThread.start();
@@ -115,6 +86,9 @@ public class DriveSubsystem extends Subsystem {
         backRightEncoder.reset();
         */
         strafeEncoder.reset();
+        if (!gyro.isPresent()) {
+            Log.e("GYRO IS NOT PRESENT! IMMEDIATELY DEBUG!");
+        }
     }
 
     @Override

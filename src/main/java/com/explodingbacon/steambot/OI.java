@@ -12,10 +12,12 @@ public class OI extends AbstractOI {
 
     private static boolean isInit = false;
 
-    public static LogitechController drive = null;
+    public static XboxController drive = null;
     public static XboxController manipulator = null;
 
-    public static Button gear, allowPressureGear;
+    public static Button slowButton;
+    public static Button rezero;
+    public static Button gear, manipGear, allowPressureGear;
     public static Button liftStart, liftStop;
     public static Button shoot;
 
@@ -27,15 +29,20 @@ public class OI extends AbstractOI {
     public static void init() {
         isInit = true;
 
-        drive = new LogitechController(0);
+        drive = new XboxController(0);
         manipulator = new XboxController(1); //port 1
 
+        rezero = drive.start;
+
         gear = drive.rightTrigger;
+        slowButton = drive.leftTrigger;
 
-        allowPressureGear = manipulator.rightTrigger;
+        manipGear = manipulator.rightTrigger;
 
-        liftStart = manipulator.a;
-        liftStop = manipulator.y;
+        allowPressureGear = manipulator.leftTrigger;
+
+        liftStart = manipulator.y;
+        liftStop = manipulator.a;
         shoot = manipulator.b;
     }
 

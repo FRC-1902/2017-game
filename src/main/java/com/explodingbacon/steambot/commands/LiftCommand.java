@@ -1,32 +1,27 @@
 package com.explodingbacon.steambot.commands;
 
-import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.Command;
 import com.explodingbacon.steambot.OI;
 import com.explodingbacon.steambot.Robot;
 import com.explodingbacon.steambot.subsystems.LiftSubsystem;
 
-/**
- * Created by LenovoBacon1 on 2/2/2017.
- */
 public class LiftCommand extends Command {
     private LiftSubsystem lift;
-    private XboxController controller;
-
-    private double liftPow = 0.5;
-    private double limit = 9001; // > 9000
-
-    private boolean liftToggle;
 
     @Override
     public void onInit() {
         lift = Robot.lift;
-        controller = OI.manipulator;
-        liftToggle = false;
     }
 
     @Override
     public void onLoop() {
+        //lift.getLiftMotors().setPower(OI.liftStart.get() ? 1 : 0);
+        lift.set(OI.liftStart.get() ? 1 : 0);
+
+
+
+
+        /*
         if(OI.liftStart.get() && lift.get() < limit && !liftToggle){
             liftToggle = true;
         } else if(OI.liftStop.get() && liftToggle){
@@ -38,6 +33,7 @@ public class LiftCommand extends Command {
         } else{
             lift.set(0);
         }
+        */
     }
 
     @Override

@@ -13,12 +13,12 @@ public class DriveCommand extends Command {
 
     private final double deadzone = 0.1;
 
-    private final double angleAdjustRate = 1;
+    private final double angleAdjustRate = 2;
 
     private double joyX, joyY, joyZ;
     private MotorGroup left, right, strafe;
     private double angle = 0;
-    private LogitechController drive;
+    private XboxController drive;
 
     private boolean leftWasTrue = false, rightWasTrue = false;
 
@@ -35,6 +35,10 @@ public class DriveCommand extends Command {
 
     @Override
     public void onLoop() {
+        if (OI.rezero.get()) {
+            Robot.drive.gyro.rezero();
+        }
+
         joyX = drive.getX();
         joyY = -drive.getY();
         joyZ = -drive.getX2();
@@ -62,10 +66,10 @@ public class DriveCommand extends Command {
         strafe.setPower(joyX / scalar);
         */
 
-        if(drive.one.get()) angle = 270;
-        if(drive.four.get()) angle = 0;
-        if(drive.three.get()) angle = 90;
-        if(drive.two.get()) angle = 180;
+        if(drive.x.get()) angle = 270;
+        if(drive.y.get()) angle = 0;
+        if(drive.b.get()) angle = 90;
+        if(drive.a.get()) angle = 180;
 
         boolean left = drive.leftBumper.get();
         boolean right = drive.rightBumper.get();
@@ -79,23 +83,19 @@ public class DriveCommand extends Command {
         leftWasTrue = left;
         rightWasTrue = right;
 
-        /*
-        double leftTrig = Utils.deadzone(drive.getLeftTrigger(), deadzone);
-        double rightTrig = Utils.deadzone(drive.getRightTrigger(), deadzone);
+        boolean turnRight = drive.start.get();
+        boolean turnLeft = drive.select.get();
 
-        if (leftTrig > 0) {
-            angle -= angleAdjustRate * leftTrig;
-        } else if (rightTrig > 0) {
-            angle += angleAdjustRate * rightTrig;
-        } else {
-            if (leftTrigWasTrue || rightTrigWasTrue) {
+        if (turnLeft) {
+            angle -= angleAdjustRate;
+        } else if (turnRight) {
+            angle += angleAdjustRate;
+        } else if(leftTrigWasTrue || rightTrigWasTrue){
                 //angle = Robot.drive.gyro.getHeading();
-            }
         }
 
-        leftTrigWasTrue = leftTrig > 0;
-        rightTrigWasTrue = rightTrig > 0;
-        */
+        leftTrigWasTrue = turnLeft;
+        rightTrigWasTrue = turnRight;
 
         if (angle < 0) {
             angle = 360 + angle;
@@ -103,16 +103,16 @@ public class DriveCommand extends Command {
             angle = angle - 360;
         }
 
-        if(OI.drive.leftTrigger.get()) {
-            joyX *= 0.4;
-            joyY *= 0.4;
-            joyZ *= 0.4;
+        if(OI.slowButton.get()) {
+            joyX *= 0.5;
+            joyY *= 0.5;
+            joyZ *= 0.5;
         }
 
         Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle, true);
 
-        if (DriverStation.getInstance().getBatteryVoltage() <= 9) {
-            OI.manipulator.rumble(0.1f, 0.1f);
+        if (DriverStation.getInstance().getBatteryVoltage() <= 8) {
+            OI.manipulator.rumble(0.2f, 0.2f);
         } else {
             OI.manipulator.rumble(0, 0);
         }

@@ -38,6 +38,7 @@ public class PositionLogThread extends CodeThread {
         }
     }
 
+    //TODO: test changes to this
     public int getStrafeAt(Long time) {
         Long above = Long.MAX_VALUE, below = Long.MIN_VALUE;
 

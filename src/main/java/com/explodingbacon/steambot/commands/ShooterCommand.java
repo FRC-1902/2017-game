@@ -1,6 +1,5 @@
 package com.explodingbacon.steambot.commands;
 
-import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.Command;
 import com.explodingbacon.steambot.OI;
 import com.explodingbacon.steambot.Robot;

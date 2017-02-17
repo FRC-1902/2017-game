@@ -13,20 +13,18 @@ import java.util.List;
 
 public class VisionThread extends Thread {
 
-    private Image goalSample;
     private TargetMode mode = TargetMode.GEAR;
     private boolean atTarget = false;
     private Long timeOfTargetFind = null;
     private double error = 0;
+    private Double inchesFromTarget = null;
 
     private final double TARGET_POS_OFFSET = -33; //-28
     private double gearPixelError;
 
     @Override
     public void run() {
-        //goalSample = Image.fromFile("/home/lvuser/images/goal_sample.png").inRange(new Color(244, 244, 244), new Color(255, 255, 255));
-
-        Log.v("Vision thread running.");
+        Log.v("Vision thread started.");
         UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
         camera.setFPS(5);
         camera.setResolution(320, 240);
@@ -37,8 +35,8 @@ public class VisionThread extends Thread {
         Image source = new Image();
         Image output;
 
-        //CameraSettings.setExposureAuto(1);
-        //CameraSettings.setExposure(9);
+        CameraSettings.setExposureAuto(1);
+        CameraSettings.setExposure(9);
 
         //noinspection InfiniteLoopStatement
         while (true) {
@@ -84,16 +82,18 @@ public class VisionThread extends Thread {
                     double aligned = (source.getWidth() / 2) - TARGET_POS_OFFSET;
                     if (correctContours.size() == 2) {
                         Contour target2 = correctContours.get(1);
+                        double avgWidth = target1.getWidth() + target2.getWidth() / 2;
+                        inchesPerPixel = avgWidth / 2; //TODO: label that this 2 is how long the target is in inches
                         double targetPos = (target1.getMiddleX() + target2.getMiddleX()) / 2;
                         error = aligned - targetPos;
-                        Log.d("ERROR IN PIXELS: " + error);
-                        double width = (target1.getWidth() + target2.getWidth()) / 2;
+                        inchesFromTarget = error * inchesPerPixel;
+                        //Log.d("Inches off target: " + inchesFromTarget);
                         //gearPixelError = width * 1.5;
                         gearPixelError = Math.abs(target1.getMiddleX() - target2.getMiddleX()) / 2;
                         if (Math.abs(error) <= gearPixelError) {
-                            if (!atTarget) {
+                            //if (!atTarget) {
                                 timeOfTargetFind = timeOfGet;
-                            }
+                            //}
                             atTarget = true;
                         } else {
                             atTarget = false;
@@ -103,6 +103,8 @@ public class VisionThread extends Thread {
                         output.drawLine(Utils.round(aligned + TARGET_POS_OFFSET), Color.WHITE);
                         output.drawLine(Utils.round(targetPos), Color.YELLOW);
 
+                    } else {
+                        inchesFromTarget = null;
                     }
                     Color lines;
                     if (atTarget) {
@@ -143,6 +145,15 @@ public class VisionThread extends Thread {
 
     public Long getTimeOfTargetFind() {
         return timeOfTargetFind;
+    }
+
+    /**
+     * Gets how many inches off-target we are. (side-to-side inches, NOT DISTANCE).
+     *
+     * @return How many inches off-target we are. Returns null if the target is not in sight.
+     */
+    public Double getInchesFromTarget() {
+        return inchesFromTarget;
     }
 
     /**

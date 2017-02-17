@@ -4,7 +4,6 @@ import com.explodingbacon.bcnlib.actuators.Motor;
 import com.explodingbacon.bcnlib.actuators.Solenoid;
 import com.explodingbacon.bcnlib.framework.Subsystem;
 import com.explodingbacon.steambot.Map;
-
 import java.util.List;
 
 public class VisionSubsystem extends Subsystem {
@@ -24,19 +23,13 @@ public class VisionSubsystem extends Subsystem {
     }
 
     @Override
-    public void enabledInit() {
-
-    }
+    public void enabledInit() {}
 
     @Override
-    public void disabledInit() {
-
-    }
+    public void disabledInit() {}
 
     @Override
-    public void stop() {
-
-    }
+    public void stop() {}
 
     @Override
     public List<Motor> getAllMotors() {

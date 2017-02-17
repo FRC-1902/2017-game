@@ -29,7 +29,6 @@ import com.explodingbacon.steambot.subsystems.GearSubsystem;
 import com.explodingbacon.steambot.subsystems.LiftSubsystem;
 import com.explodingbacon.steambot.subsystems.ShooterSubsystem;
 import com.explodingbacon.steambot.subsystems.VisionSubsystem;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -43,6 +42,7 @@ public class Robot extends RobotCore {
     public static GearSubsystem gear;
     public static LiftSubsystem lift;
     public static ShooterSubsystem shooter;
+
     public static VisionThread visionThread = new VisionThread();
     public static PositionLogThread positionLog = new PositionLogThread();
     public static SendableChooser auto;
@@ -52,12 +52,12 @@ public class Robot extends RobotCore {
 
         oi = new OI();
 
-        //Vision.init();
+        Vision.init();
 
         drive = new DriveSubsystem();
         vision = new VisionSubsystem();
         gear = new GearSubsystem();
-        //lift = new LiftSubsystem();
+        lift = new LiftSubsystem();
         //shooter = new ShooterSubsystem();
 
         if (Vision.isInit()) visionThread.start();
@@ -90,10 +90,6 @@ public class Robot extends RobotCore {
     @Override
     public void enabledPeriodic() {
         super.enabledPeriodic();
-
-        //Log.d("Strafe Encoder: " + Robot.drive.strafeEncoder.get());
-
-        //Log.d("Gyro: " + Robot.drive.gyro.getHeading() + ", cal: " + Robot.drive.gyro.isCalibrated());
     }
 
     @Override
@@ -101,11 +97,9 @@ public class Robot extends RobotCore {
         super.autonomousInit();
 
         OI.runCommand(new GearCommand());
-        OI.runCommand(new AutonomousCommand());
+        OI.runCommand(new AutoOne());
 
-        Log.d("ROBOT IS AUTO? " + isAutonomous());
-
-        Log.d("Autonomous init");
+        Log.i("Autonomous init!");
     }
 
     @Override
@@ -119,36 +113,25 @@ public class Robot extends RobotCore {
 
         OI.runCommand(new DriveCommand());
         OI.runCommand(new GearCommand());
-
-        //Log.d("TELEOP? " + isTeleop());
-        //OI.runCommand(new LiftCommand());
+        OI.runCommand(new LiftCommand());
         //OI.runCommand(new ShooterCommand());
 
-        Log.d("Teleop init");
+        Log.i("Teleop init");
     }
 
     @Override
-    public void teleopPeriodic() {
-        Log.d("Booped: " + gear.touch.get());
-    }
+    public void teleopPeriodic() {}
 
     @Override
-    public void disabledPeriodic() {
-        //Log.d("Strafe: " + drive.strafeEncoder.get());
-    }
+    public void disabledPeriodic() {}
 
     @Override
     public void testInit() {
         super.testInit();
-
-        Robot.drive.getLeftMotors().testEachWait(0.6, 0.5);
-        Robot.drive.getRightMotors().testEachWait(0.6, 0.5);
-        Robot.drive.getStrafeMotors().testEachWait(0.6, 0.5);
     }
 
     @Override
     public void testPeriodic() {
         super.testPeriodic();
-        drive.strafePID.logVerbose();
     }
 }

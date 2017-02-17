@@ -12,33 +12,30 @@ import java.util.List;
 
 public class LiftSubsystem extends Subsystem {
     private MotorGroup liftMotors;
-    private PIDController liftPID;
-    private Encoder liftEncoder;
+    //private PIDController liftPID;
+    //private Encoder liftEncoder;
 
     public LiftSubsystem() {
         liftMotors = new MotorGroup(VictorSP.class, Map.LIFT_DRIVE_1, Map.LIFT_DRIVE_2);
-        liftMotors.setInverts(false, true);
-
-        liftEncoder = new Encoder(Map.LIFT_ENC_A, Map.LIFT_ENC_B);
-        liftEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
-
-        liftPID = new PIDController(liftMotors, liftEncoder, 0, 0, 0);
+        liftMotors.setInverts(true, false);
     }
 
     @Override
     public void enabledInit() {
-        liftEncoder.reset();
-        liftPID.enable();
     }
 
     @Override
     public void disabledInit() {
-        liftPID.disable();
+        liftMotors.setPower(0);
+    }
+
+    public MotorGroup getLiftMotors() {
+        return liftMotors;
     }
 
     @Override
     public void stop() {
-        liftPID.disable();
+        liftMotors.setPower(0);
     }
 
     @Override
@@ -46,9 +43,5 @@ public class LiftSubsystem extends Subsystem {
         return null;
     }
 
-    public void set(double power){liftPID.setTarget(power);}
-
-    public double get(){
-        return liftEncoder.get();
-    }
+    public void set(double power){liftMotors.setPower(power);}
 }
