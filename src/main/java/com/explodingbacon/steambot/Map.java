@@ -17,12 +17,12 @@ public class Map {
     public static int LIFT_DRIVE_2 = 7;
 
     public static int DISTURBER = 0;
-    public static int INDEXER = 1;
 
     //CAN
 
     public static int SHOOTER_1 = 0;
     public static int SHOOTER_2 = 1;
+    public static int INDEXER = 3;
 
     //DIO
     public static int STRAFE_ENC_A = 0;

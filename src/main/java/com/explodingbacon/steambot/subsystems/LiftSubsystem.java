@@ -12,8 +12,6 @@ import java.util.List;
 
 public class LiftSubsystem extends Subsystem {
     private MotorGroup liftMotors;
-    //private PIDController liftPID;
-    //private Encoder liftEncoder;
 
     public LiftSubsystem() {
         liftMotors = new MotorGroup(VictorSP.class, Map.LIFT_DRIVE_1, Map.LIFT_DRIVE_2);

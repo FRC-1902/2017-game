@@ -8,6 +8,9 @@ import com.explodingbacon.bcnlib.framework.PIDController;
 import com.explodingbacon.bcnlib.framework.Subsystem;
 import com.explodingbacon.bcnlib.sensors.Encoder;
 import com.explodingbacon.steambot.Map;
+import com.explodingbacon.steambot.OI;
+import edu.wpi.first.wpilibj.VictorSP;
+
 import java.util.List;
 
 public class ShooterSubsystem extends Subsystem {
@@ -17,12 +20,13 @@ public class ShooterSubsystem extends Subsystem {
     private PIDController shootPID;
 
    //TODO: tune
-    private double shootPow = 0.5;
     private double indexPow = 0.5;
     private double disturberPow = 0.5;
 
+    private final double SHOOTER_RPM = 90000; //TODO: tune
+
     public ShooterSubsystem() {
-        disturber = new Motor(CANTalon.class, Map.DISTURBER);
+        disturber = new Motor(VictorSP.class, Map.DISTURBER);
         indexer = new Motor(CANTalon.class, Map.INDEXER);
 
         shooter = new MotorGroup(CANTalon.class, Map.SHOOTER_1, Map.SHOOTER_2);
@@ -46,19 +50,27 @@ public class ShooterSubsystem extends Subsystem {
     @Override
     public List<Motor> getAllMotors() {return null;}
 
-    public void shoot(){
+    public void rev() {
         if(!shootPID.isEnabled()) shootPID.enable();
+        shootPID.setTarget(SHOOTER_RPM);
+    }
 
-        shootPID.setTarget(shootPow);
+    public void stopRev() {
+        shootPID.disable();
+        shootPID.setTarget(0);
+    }
 
+    public void shoot(){
         if(shootPID.isDone()){
+            OI.manipulator.rumble(.5f, .5f);
             disturber.setPower(disturberPow);
             indexer.setPower(indexPow);
         } else {
+            OI.manipulator.rumble(0, 0);
             Log.d("Shooter error: " + shootPID.getCurrentError());
             disturber.setPower(0);
             indexer.setPower(0);
-            shootPID.disable();
+            //shootPID.disable();
             //shootPID.setTarget(0);
         }
     }

@@ -8,9 +8,8 @@ import com.explodingbacon.steambot.Map;
 import java.util.List;
 
 public class GearSubsystem extends Subsystem {
-    private Solenoid lSol/*, rSol*/;
+    private Solenoid lSol;
     public DigitalInput touch;
-    //private Thread watchdogThread;
 
     public GearSubsystem() {
         lSol = new Solenoid(Map.LEFT_SOL);
@@ -24,13 +23,11 @@ public class GearSubsystem extends Subsystem {
     }
 
     @Override
-    public void disabledInit() {
-
-    }
+    public void disabledInit() {}
 
     @Override
     public void stop() {
-
+        setDeployed(false);
     }
 
     @Override

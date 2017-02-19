@@ -74,12 +74,7 @@ public class VisionThread extends Thread {
                 double inchesPerPixel;
 
                 if (mode == TargetMode.GEAR) {
-                    /*
-                    if (OI.manipulator.rightJoyButton.get()) {
-                        Log.d("PIC");
-                        source.saveAs("home/lvuser/sample.png");
-                    }
-                    */
+
                     double aligned = (source.getWidth() / 2) - TARGET_POS_OFFSET;
                     if (correctContours.size() == 2) {
                         canSeeTarget = true;

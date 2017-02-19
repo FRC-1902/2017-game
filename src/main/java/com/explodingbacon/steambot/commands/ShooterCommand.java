@@ -15,8 +15,13 @@ public class ShooterCommand extends Command {
 
     @Override
     public void onLoop() {
+        if (OI.shooterRev.get()) {
+            shooter.rev();
+        } else {
+            shooter.stopRev();
+        }
+
         if(OI.shoot.get()) shooter.shoot();
-        else shooter.disable();
     }
 
     @Override

@@ -19,7 +19,7 @@ public class OI extends AbstractOI {
     public static Button rezero;
     public static Button gear, manipGear, allowPressureGear;
     public static Button liftStart;
-    public static Button shoot;
+    public static Button shoot, shooterRev;
 
     public OI() {
         init();
@@ -37,12 +37,14 @@ public class OI extends AbstractOI {
         gear = drive.rightTrigger;
         slowButton = drive.leftTrigger;
 
+        shoot = drive.select; //TODO: remap?
+
         manipGear = manipulator.rightTrigger;
 
         allowPressureGear = manipulator.leftTrigger;
 
         liftStart = manipulator.y;
-        shoot = manipulator.b;
+        shooterRev = manipulator.b;
     }
 
     /**

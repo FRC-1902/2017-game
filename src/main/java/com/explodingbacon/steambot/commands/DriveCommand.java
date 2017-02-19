@@ -111,11 +111,13 @@ public class DriveCommand extends Command {
 
         Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle, true);
 
+        /*
         if (DriverStation.getInstance().getBatteryVoltage() <= 8) {
             OI.manipulator.rumble(0.2f, 0.2f);
         } else {
             OI.manipulator.rumble(0, 0);
         }
+        */
     }
 
     @Override

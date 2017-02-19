@@ -65,6 +65,8 @@ public class AutoOne extends Command {
                 while (!(touched = Robot.gear.getTouchSensor()) && (timeElapsed = Math.abs(millis - System.currentTimeMillis())) <= (sideGear ? 5000 : 4000)) {
 
                     //TODO: see if latency adjust is needed
+                    //TODO: see if checking for isAtTarget() increases or decreases accuracy
+                    //TODO: test using strafe PID over raw motor values
                     double error = Robot.visionThread.getError();
                     if (!Robot.visionThread.isAtTarget()) {
                         if (Math.abs(error) > 5) {
