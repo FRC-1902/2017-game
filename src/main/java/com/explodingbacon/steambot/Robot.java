@@ -116,14 +116,14 @@ public class Robot extends RobotCore {
         OI.runCommand(new LiftCommand());
         //OI.runCommand(new ShooterCommand());
 
-        Log.i("Teleop init");
+        Log.i("Teleop init!");
     }
 
     @Override
-    public void teleopPeriodic() {}
+    public void teleopPeriodic() { super.teleopPeriodic(); }
 
     @Override
-    public void disabledPeriodic() {}
+    public void disabledPeriodic() { super.disabledPeriodic(); }
 
     @Override
     public void testInit() {
