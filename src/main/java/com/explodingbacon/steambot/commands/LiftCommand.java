@@ -18,9 +18,6 @@ public class LiftCommand extends Command {
         //lift.getLiftMotors().setPower(OI.liftStart.get() ? 1 : 0);
         lift.set(OI.liftStart.get() ? 1 : 0);
 
-
-
-
         /*
         if(OI.liftStart.get() && lift.get() < limit && !liftToggle){
             liftToggle = true;

@@ -1,5 +1,6 @@
 package com.explodingbacon.steambot;
 
+import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.utils.CodeThread;
 
 import java.util.ArrayList;
@@ -40,6 +41,19 @@ public class PositionLogThread extends CodeThread {
 
     //TODO: test changes to this
     public int getStrafeAt(Long time) {
+
+        Long closest = null;
+        synchronized (STRAFE_POSITIONS_USE) {
+            for (Long l : strafePositions.keySet()) {
+                if (closest == null || Math.abs(time - l) < Math.abs(time - closest)) {
+                    closest = l;
+                }
+            }
+        }
+        return strafePositions.get(closest);
+
+
+        /*
         Long above = Long.MAX_VALUE, below = Long.MIN_VALUE;
 
         synchronized (STRAFE_POSITIONS_USE) {
@@ -52,10 +66,28 @@ public class PositionLogThread extends CodeThread {
             }
         }
 
-        Long topDiff = above - time;
-        Long bottomDiff = time - below;
+        Long topDiff = Math.abs(above - time);
+        Long bottomDiff = Math.abs(below - time);
 
-        return (int) ((strafePositions.get(above) * bottomDiff + strafePositions.get(below) * topDiff)
-                / (bottomDiff + topDiff));
+        if (strafePositions.get(above) != null && strafePositions.get(below) != null) {
+            try {
+                return (int) ((strafePositions.get(above) * bottomDiff + strafePositions.get(below) * topDiff)
+                        / (bottomDiff + topDiff));
+            } catch (ArithmeticException e) {
+                Log.e("DIVIDED BY ZERO IN POSITIONLOG. HANDLING GRACEFULLY.");
+                return strafePositions.get(below);
+            }
+        }
+        Log.e("RIP PositionLogThread");
+        return 0;
+        */
+        /* else {
+            if (strafePositions.get(above) != null) return strafePositions.get(above);
+            else if (strafePositions.get(below) != null) return strafePositions.get(below);
+            else {
+                Log.e("Strafe position above and below is null!");
+                return 0;
+            }
+        }*/
     }
 }

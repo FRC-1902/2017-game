@@ -14,6 +14,7 @@ import java.util.List;
 public class VisionThread extends Thread {
 
     private TargetMode mode = TargetMode.GEAR;
+    private boolean canSeeTarget = false;
     private boolean atTarget = false;
     private Long timeOfTargetFind = null;
     private double error = 0;
@@ -81,30 +82,36 @@ public class VisionThread extends Thread {
                     */
                     double aligned = (source.getWidth() / 2) - TARGET_POS_OFFSET;
                     if (correctContours.size() == 2) {
+                        canSeeTarget = true;
                         Contour target2 = correctContours.get(1);
-                        double avgWidth = target1.getWidth() + target2.getWidth() / 2;
+
+                        double avgWidth = target1.getWidth();//(target1.getWidth() + target2.getWidth()) / 2;
                         inchesPerPixel = avgWidth / 2; //TODO: label that this 2 is how long the target is in inches
+
                         double targetPos = (target1.getMiddleX() + target2.getMiddleX()) / 2;
                         error = aligned - targetPos;
+
                         inchesFromTarget = error * inchesPerPixel;
                         //Log.d("Inches off target: " + inchesFromTarget);
                         //gearPixelError = width * 1.5;
                         gearPixelError = Math.abs(target1.getMiddleX() - target2.getMiddleX()) / 2;
+                        gearPixelError *= .5; //.75;
                         if (Math.abs(error) <= gearPixelError) {
                             //if (!atTarget) {
-                                timeOfTargetFind = timeOfGet;
                             //}
                             atTarget = true;
                         } else {
                             atTarget = false;
-                            timeOfTargetFind = null;
+                            //timeOfTargetFind = null;
                         }
+                        timeOfTargetFind = timeOfGet;
 
                         output.drawLine(Utils.round(aligned + TARGET_POS_OFFSET), Color.WHITE);
                         output.drawLine(Utils.round(targetPos), Color.YELLOW);
 
                     } else {
                         inchesFromTarget = null;
+                        canSeeTarget = false;
                     }
                     Color lines;
                     if (atTarget) {
@@ -145,6 +152,10 @@ public class VisionThread extends Thread {
 
     public Long getTimeOfTargetFind() {
         return timeOfTargetFind;
+    }
+
+    public boolean canSeeTarget() {
+        return canSeeTarget;
     }
 
     /**

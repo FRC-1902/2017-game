@@ -7,46 +7,110 @@ import com.explodingbacon.steambot.VisionThread;
 
 public class AutoOne extends Command {
 
-    boolean sideGear = true;
+    boolean sideGear;
+    boolean rightSide;
+
+    final double rightGearAngle = 36; //was 33
 
     @Override
     public void onInit() {
         sideGear = !Robot.auto.getSelected().toString().equalsIgnoreCase("front");
+        rightSide = Robot.auto.getSelected().toString().equalsIgnoreCase("right");
         Robot.visionThread.setTarget(VisionThread.TargetMode.GEAR);
+        long start = System.currentTimeMillis();
         while (!Robot.visionThread.isAtTarget() && Robot.isEnabled()) {
+            long time = Math.abs(start - System.currentTimeMillis());
             if (sideGear) {
-                Robot.drive.fieldCentricAbsoluteAngleDrive(Math.cos(150) / 2, Math.sin(150) / 2, 30, true);
+                if (rightSide) {
+                    if (time <= 500) {
+                        Robot.drive.fieldCentricAbsoluteAngleDrive(0, 0, rightGearAngle, true);
+                    } else {
+                        //Robot.drive.fieldCentricAbsoluteAngleDrive(0.4, 0, rightGearAngle, true);
+                        Robot.drive.fieldCentricAbsoluteAngleDrive(Math.cos(150) * .5, Math.sin(150) * .5, rightGearAngle, true);
+                    }
+                }
             } else {
                 Robot.drive.fieldCentricAbsoluteAngleDrive(0.4, 0, 0, true); //0.5 worked
             }
         }
         if (Robot.isEnabled() && Robot.isAutonomous()) {
-            double currPos = Robot.drive.strafeEncoder.get();
+            //double currPos = Robot.drive.strafeEncoder.get();
             double pos = Robot.positionLog.getStrafeAt(Robot.visionThread.getTimeOfTargetFind());
 
-            Log.d("Position difference: " + (currPos - pos));
+            if (!sideGear) {
+                pos += Robot.drive.inchesToStrafeEncoder(3);
+            } else {
+                pos -= Robot.drive.inchesToStrafeEncoder(0);
+            }
+
+            //Log.d("Position difference: " + (currPos - pos));
 
             Log.d("Strafe encoder value on detect: " + pos);
             Log.v("Gear detected!");
+
             //Robot.drive.strafePID.resetSource();
-            Robot.drive.strafePID.enable();
-            Robot.drive.strafePID.setTarget(pos);
+            //Robot.drive.strafePID.enable();
+            //Robot.drive.strafePID.setTarget(pos);
+
+            try {
+                Thread.sleep(1000);
+            } catch (Exception e) {}
+
             long millis = System.currentTimeMillis();
-            while (!Robot.gear.getTouchSensor() && Math.abs(millis - System.currentTimeMillis()) <= 8000) {
-                double speed = Math.abs(millis - System.currentTimeMillis()) >= 500 ? 0.4 : .65;
-                if (sideGear) {
-                    //Robot.drive.fieldCentricAbsoluteAngleDrive(Math.cos(45 + 180) / 2, Math.abs(45 + 180) / 2, 45, false);
-                    Robot.drive.xyzAbsoluteAngleDrive(0, speed, 30, false);
-                    //Robot.drive.fieldCentricAbsoluteAngleDrive(0 ,0, Robot.drive.rotatePID.getTarget(), false);
-                } else {
-                    Robot.drive.fieldCentricAbsoluteAngleDrive(0, speed, 0, false);
+            long timeElapsed;
+
+            boolean touched = false;
+            while (!touched && Robot.isAutonomous()) {
+                Robot.gear.setDeployed(false);
+                while (!(touched = Robot.gear.getTouchSensor()) && (timeElapsed = Math.abs(millis - System.currentTimeMillis())) <= (sideGear ? 5000 : 4000)) {
+
+                    //TODO: see if latency adjust is needed
+                    double error = Robot.visionThread.getError();
+                    if (!Robot.visionThread.isAtTarget()) {
+                        if (Math.abs(error) > 5) {
+                            if (error > 0) {
+                                Robot.drive.getStrafeMotors().setPower(0.4);
+                            } else {
+                                Robot.drive.getStrafeMotors().setPower(-0.4);
+                            }
+                        }
+                    }
+                    //Log.d("Strafe error: " + Robot.drive.strafePID.getCurrentError());
+
+                    double speed = timeElapsed >= 400 ? (sideGear ? 0.3 : 0.25) : (sideGear ? 0.6 : 0.5);
+                    if (sideGear) {
+                        if (rightSide) {
+                            Robot.drive.xyzAbsoluteAngleDrive(0, speed, rightGearAngle - 5, false);
+                        }
+                    } else {
+                        Robot.drive.fieldCentricAbsoluteAngleDrive(0, speed, 2, false);
+                    }
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (Exception e) {
+                }
+
+                //Robot.drive.strafePID.disable();
+                millis = System.currentTimeMillis();
+                while (Math.abs(millis - System.currentTimeMillis()) <= 1000) {
+                    /*
+                    if (millis >= 500) {
+                        Robot.gear.setDeployed(false);
+                    } else {
+                        Robot.gear.setDeployed(true);
+                    }
+                    */
+                    if (sideGear) {
+                        if (rightSide) {
+                            Robot.drive.xyzAbsoluteAngleDrive(0, -0.5, rightGearAngle, true);
+                        }
+                    } else {
+                        Robot.drive.fieldCentricAbsoluteAngleDrive(0, -0.4, 0, true);
+                    }
                 }
             }
-            Robot.drive.strafePID.disable();
-            millis = System.currentTimeMillis();
-            while (Math.abs(millis - System.currentTimeMillis()) <= 6000) {
-                Robot.drive.fieldCentricAbsoluteAngleDrive(0, -0.4 ,0, true);
-            }
+            Robot.gear.setDeployed(false);
             Robot.drive.fieldCentricAbsoluteAngleDrive(0, 0, 0, true);
             Log.d("Strafe encoder value at the end: " + Robot.drive.strafeEncoder.get());
         } else {
