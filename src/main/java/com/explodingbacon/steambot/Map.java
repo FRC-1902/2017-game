@@ -15,7 +15,7 @@ public class Map {
     public static int LIFT_DRIVE_1 = Robot.MAIN_ROBOT ? 6 : 5;
     public static int LIFT_DRIVE_2 = 7;
 
-    //Is CAN on the Practice Robot, is PWM on real robot
+    //Is CAN on the Real Robot, is PWM on practice robot
     public static int DISTURBER = Robot.MAIN_ROBOT ? 4 : 0;
 
     //CAN
@@ -29,7 +29,7 @@ public class Map {
     public static int GEAR_LIMIT = 4;
 
     //Solenoid
-    public static int GEAR_SOLENOID = Robot.MAIN_ROBOT ? 3 : 2;
+    public static int GEAR_SOLENOID = Robot.MAIN_ROBOT ? 3 : 1;
     public static int GEAR_SOLENOID_B = 2; //PRACTICE ROBOT ONLY
     public static int RING_LIGHT = 7;
 

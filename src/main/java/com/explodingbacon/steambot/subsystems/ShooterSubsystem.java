@@ -3,6 +3,7 @@ package com.explodingbacon.steambot.subsystems;
 import com.ctre.CANTalon;
 import com.explodingbacon.bcnlib.actuators.Motor;
 import com.explodingbacon.bcnlib.actuators.MotorGroup;
+import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.framework.PIDController;
 import com.explodingbacon.bcnlib.framework.Subsystem;
 import com.explodingbacon.bcnlib.sensors.AbstractEncoder;
@@ -21,8 +22,8 @@ public class ShooterSubsystem extends Subsystem {
     public PIDController shootPID;
 
    //TODO: tune
-    private double indexPow = 0.5;
-    private double disturberPow = 1;
+    private double indexPow = 0.3;
+    private double disturberPow = 0.7;
 
     //private final double SHOOTER_RPM = 80000; //TODO: tune
 
@@ -41,12 +42,16 @@ public class ShooterSubsystem extends Subsystem {
         shootEncoder.setPIDMode(AbstractEncoder.PIDMode.RATE);
 
         //shootEncoder = new Encoder(Map.SHOOT_ENC_A, Map.SHOOT_ENC_B);
-        shootPID = new PIDController(shooter, shootEncoder, 0.00002 / 2, .00000085, .00001, 0.1, 1); //TODO: tune
+        //TODO: experiment with completely removing I and compare to the same PID with I
+        shootPID = new PIDController(shooter, shootEncoder, 0.000015, .00000085, .00001 * 2, 0.1, 1); //TODO: tune
+        //        shootPID = new PIDController(shooter, shootEncoder, 0.00002 / 2, .00000085, .00001, 0.1, 1); //TODO: tune
 
         shootPID.setFinishedTolerance(400); //600
 
         shootPID.setExtraCode(() -> {
-            if (Robot.shooter.shootPID.isEnabled() && Robot.shooter.shootPID.isDone()) {
+            boolean done = shootPID.isDone();
+            shoot(done);
+            if (shootPID.isEnabled() && done && OI.shooterRev.get()) {
                 OI.manipulator.rumble(.2f, .2f);
             } else {
                 OI.manipulator.rumble(0f, 0f);
@@ -80,15 +85,17 @@ public class ShooterSubsystem extends Subsystem {
     }
 
     private long boopStart = 0;
-    public void shoot(){
+    public void shoot(boolean upToSpeed){
         if (shootPID.isEnabled()) {
-            if (shootPID.isDone() && OI.shooterRev.get()) {
+            //Log.d("Done = " + done);
+            if (upToSpeed && OI.shooterRev.get() && OI.shoot.get()) {
                 disturber.setPower(disturberPow);
                 indexer.setPower(indexPow);
                 boopStart = System.currentTimeMillis();
+                Log.d("WANT TO SHOOT! Shoot encoder: " + shootEncoder.getForPID());
             }
         }
-        if (System.currentTimeMillis() - boopStart >= 500 || !shootPID.isEnabled()) {
+        if (System.currentTimeMillis() - boopStart >= 150 || !shootPID.isEnabled() || !OI.shooterRev.get()) {
             disturber.setPower(0);
             indexer.setPower(0);
         }

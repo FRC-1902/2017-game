@@ -183,7 +183,12 @@ public class DriveSubsystem extends Subsystem {
      */
     public void xyzDrive(double x, double y, double z) {
         rotatePID.disable();
-        setFiltered(y + z, y - z, x + strafePidOutput.getPower());
+        y = -y;
+        //double oldZ = z;
+        //z = x;
+        //x = oldZ;
+
+        setFiltered(y + z, z - y, x + strafePidOutput.getPower());
     }
 
     /**

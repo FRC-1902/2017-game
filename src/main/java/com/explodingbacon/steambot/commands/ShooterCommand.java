@@ -18,13 +18,11 @@ public class ShooterCommand extends Command {
     public void onLoop() {
         if (OI.shooterRev.get()) {
             shooter.rev();
-            Log.d("enc: " + shooter.shootEncoder.getForPID());
         } else {
             shooter.stopRev();
+            shooter.getDisturber().setPower(0);
+            shooter.getIndexer().setPower(0);
         }
-        if(OI.shoot.get()) shooter.shoot();
-
-        //shooter.shootPID.logVerbose();
     }
 
     @Override

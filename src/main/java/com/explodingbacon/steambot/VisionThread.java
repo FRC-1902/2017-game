@@ -95,7 +95,7 @@ public class VisionThread extends Thread {
                 if (mode == TargetMode.GEAR) {
 
                     double aligned = (source.getWidth() / 2) + TARGET_POS_OFFSET;
-                    Log.i("ContoursWithinRange: " + contoursWithinRange.size());
+                    //Log.d("ContoursWithinRange: " + contoursWithinRange.size());
                     if (contoursWithinRange.size() == 2) {
                         canSeeTarget = true;
                         Contour target1 = contoursWithinRange.get(0);

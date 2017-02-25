@@ -43,7 +43,9 @@ public class Robot extends RobotCore {
     public static PositionLogThread positionLog = new PositionLogThread();
     public static SendableChooser auto;
 
-    public static final boolean MAIN_ROBOT = true;
+    private boolean rezeroed = false;
+
+    public static final boolean MAIN_ROBOT = false;
 
     public Robot(IterativeRobot r) {
         super(r);
@@ -62,7 +64,7 @@ public class Robot extends RobotCore {
 
         positionLog.start();
 
-        SmartDashboard.putNumber("Shoot Speed", 92000);
+        SmartDashboard.putNumber("Shoot Speed", 88000);
 
         auto = new SendableChooser();
         auto.initTable(NetworkTable.getTable("BaconTable"));
@@ -82,6 +84,11 @@ public class Robot extends RobotCore {
         OI.deleteAllTriggers();
 
         vision.setRingLight(true);
+
+        if (Robot.drive.gyro.isPresent() && !rezeroed) {
+            Robot.drive.gyro.rezero();
+            rezeroed = true;
+        }
 
         Log.d("BNO sensor present: " + Robot.drive.gyro.isPresent());
 
@@ -132,6 +139,16 @@ public class Robot extends RobotCore {
     @Override
     public void testInit() {
         super.testInit();
+        shooter.getIndexer().setPower(0.5);
+        try {
+            Thread.sleep(500);
+        } catch (Exception e) {}
+        shooter.getIndexer().setPower(0);
+        shooter.getDisturber().setPower(0.5);
+        try {
+            Thread.sleep(500);
+        } catch (Exception e) {}
+        shooter.getDisturber().setPower(0);
     }
 
     @Override
