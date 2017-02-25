@@ -1,10 +1,8 @@
 package com.explodingbacon.steambot;
 
-import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.utils.CodeThread;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 

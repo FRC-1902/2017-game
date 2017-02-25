@@ -1,12 +1,8 @@
 package com.explodingbacon.steambot;
 
 import com.explodingbacon.bcnlib.controllers.Button;
-import com.explodingbacon.bcnlib.controllers.JoystickButton;
-import com.explodingbacon.bcnlib.controllers.LogitechController;
 import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.AbstractOI;
-
-import javax.xml.ws.handler.LogicalHandler;
 
 public class OI extends AbstractOI {
 

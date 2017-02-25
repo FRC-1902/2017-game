@@ -24,11 +24,7 @@ import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.framework.RobotCore;
 import com.explodingbacon.bcnlib.vision.Vision;
 import com.explodingbacon.steambot.commands.*;
-import com.explodingbacon.steambot.subsystems.DriveSubsystem;
-import com.explodingbacon.steambot.subsystems.GearSubsystem;
-import com.explodingbacon.steambot.subsystems.LiftSubsystem;
-import com.explodingbacon.steambot.subsystems.ShooterSubsystem;
-import com.explodingbacon.steambot.subsystems.VisionSubsystem;
+import com.explodingbacon.steambot.subsystems.*;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -47,6 +43,8 @@ public class Robot extends RobotCore {
     public static PositionLogThread positionLog = new PositionLogThread();
     public static SendableChooser auto;
 
+    public static final boolean MAIN_ROBOT = true;
+
     public Robot(IterativeRobot r) {
         super(r);
 
@@ -58,11 +56,13 @@ public class Robot extends RobotCore {
         vision = new VisionSubsystem();
         gear = new GearSubsystem();
         lift = new LiftSubsystem();
-        //shooter = new ShooterSubsystem();
+        shooter = new ShooterSubsystem();
 
         if (Vision.isInit()) visionThread.start();
 
         positionLog.start();
+
+        SmartDashboard.putNumber("Shoot Speed", 92000);
 
         auto = new SendableChooser();
         auto.initTable(NetworkTable.getTable("BaconTable"));
@@ -71,7 +71,8 @@ public class Robot extends RobotCore {
         auto.addObject("Right", "right");
         SmartDashboard.putData("Autonomous Picker", auto);
 
-        Log.i("Air Pork One initialized.");
+        Log.i("Air Pork " + (MAIN_ROBOT ? "One" : "Too") + " initialized.");
+        if (!MAIN_ROBOT) Log.w("ROBOT IN PRACTICE MODE!");
     }
 
     @Override
@@ -96,8 +97,7 @@ public class Robot extends RobotCore {
     public void autonomousInit() {
         super.autonomousInit();
 
-        OI.runCommand(new GearCommand());
-        OI.runCommand(new AutoOne());
+        OI.runCommand(new StreamlineAuto());
 
         Log.i("Autonomous init!");
     }
@@ -114,16 +114,20 @@ public class Robot extends RobotCore {
         OI.runCommand(new DriveCommand());
         OI.runCommand(new GearCommand());
         OI.runCommand(new LiftCommand());
-        //OI.runCommand(new ShooterCommand());
+        OI.runCommand(new ShooterCommand());
 
         Log.i("Teleop init!");
     }
 
     @Override
-    public void teleopPeriodic() { super.teleopPeriodic(); }
+    public void teleopPeriodic() {
+        super.teleopPeriodic();
+    }
 
     @Override
-    public void disabledPeriodic() { super.disabledPeriodic(); }
+    public void disabledPeriodic() {
+        super.disabledPeriodic();
+    }
 
     @Override
     public void testInit() {

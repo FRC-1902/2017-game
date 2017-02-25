@@ -7,6 +7,7 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,11 +18,14 @@ public class VisionThread extends Thread {
     private boolean canSeeTarget = false;
     private boolean atTarget = false;
     private Long timeOfTargetFind = null;
-    private double error = 0;
-    private Double inchesFromTarget = null;
+    private Integer positionWhenDetected = -1;
+    private double errorInPixels = 0;
+    private Double errorInInches = null;
 
-    private final double TARGET_POS_OFFSET = -33; //-28
+    private final double TARGET_POS_OFFSET = -30.5; //10
     private double gearPixelError;
+
+    //TODO: catch the vision exception thing that ALWAYS happens
 
     @Override
     public void run() {
@@ -41,8 +45,8 @@ public class VisionThread extends Thread {
 
         //noinspection InfiniteLoopStatement
         while (true) {
-            //TODO: see if grabbing the encoder value pre-picture taking then passing that on is more accurate than the current method
             long timeOfGet = System.currentTimeMillis();
+            int possiblePosition = Robot.drive.strafeEncoder.get();
             cvSink.grabFrame(source.getMat());
 
             //Log.v("Millis diff: " + (System.currentTimeMillis() - millis));
@@ -69,29 +73,49 @@ public class VisionThread extends Thread {
                 //TODO: make sure this sorting puts the highest area contours at the top of the list
                 Collections.sort(correctContours, (o1, o2) -> Utils.round(o1.getArea() - o2.getArea()));
 
-                Contour target1 = correctContours.get(0);
+                List<Contour> contoursWithinRange = new ArrayList<>();
+                for (Contour c1 : correctContours) {
+                    for (Contour c2 : correctContours) {
+                        double diff = c1.getMiddleX() - c2.getMiddleX();
+                        double avgWidth = (c1.getWidth() + c2.getWidth()) / 2;
+                        double pixelsPerInch = avgWidth / 2;
+                        diff /= pixelsPerInch;
+                        if (Math.abs(diff) > 5 && Math.abs(diff) < 10) {
+                            if (!contoursWithinRange.contains(c1) || !contoursWithinRange.contains(c2)) {
+                                contoursWithinRange.add(c1);
+                                contoursWithinRange.add(c2);
+                            }
+                        }
+                    }
+                }
+                //Contour target1 = correctContours.get(0);
 
-                double inchesPerPixel;
+                double pixelsPerInch;
 
                 if (mode == TargetMode.GEAR) {
 
-                    double aligned = (source.getWidth() / 2) - TARGET_POS_OFFSET;
-                    if (correctContours.size() == 2) {
+                    double aligned = (source.getWidth() / 2) + TARGET_POS_OFFSET;
+                    Log.i("ContoursWithinRange: " + contoursWithinRange.size());
+                    if (contoursWithinRange.size() == 2) {
                         canSeeTarget = true;
-                        Contour target2 = correctContours.get(1);
-
-                        double avgWidth = target1.getWidth();//(target1.getWidth() + target2.getWidth()) / 2;
-                        inchesPerPixel = avgWidth / 2; //TODO: label that this 2 is how long the target is in inches
+                        Contour target1 = contoursWithinRange.get(0);
+                        Contour target2 = contoursWithinRange.get(1);
 
                         double targetPos = (target1.getMiddleX() + target2.getMiddleX()) / 2;
-                        error = aligned - targetPos;
+                        errorInPixels = aligned - targetPos;
 
-                        inchesFromTarget = error * inchesPerPixel;
-                        //Log.d("Inches off target: " + inchesFromTarget);
+                        //Log.d("Error in pixels:" + errorInPixels);
+
+                        double avgWidth = /*target1.getWidth();*/(target1.getWidth() + target2.getWidth()) / 2;
+                        pixelsPerInch = avgWidth / 2; //TODO: label/variable that shows that this 2 is how long the target is in inches
+                        errorInInches = errorInPixels / pixelsPerInch;
+                        positionWhenDetected = possiblePosition;
+
+                        //Log.d("Inches off target: " + errorInInches);
                         //gearPixelError = width * 1.5;
                         gearPixelError = Math.abs(target1.getMiddleX() - target2.getMiddleX()) / 2;
                         gearPixelError *= .5; //.75;
-                        if (Math.abs(error) <= gearPixelError) {
+                        if (Math.abs(errorInPixels) <= gearPixelError) {
                             //if (!atTarget) {
                             //}
                             atTarget = true;
@@ -101,11 +125,12 @@ public class VisionThread extends Thread {
                         }
                         timeOfTargetFind = timeOfGet;
 
-                        output.drawLine(Utils.round(aligned + TARGET_POS_OFFSET), Color.WHITE);
+                        //output.drawLine(Utils.round(aligned + TARGET_POS_OFFSET), Color.WHITE);
                         output.drawLine(Utils.round(targetPos), Color.YELLOW);
 
                     } else {
-                        inchesFromTarget = null;
+                        errorInInches = null;
+                        positionWhenDetected = null;
                         canSeeTarget = false;
                     }
                     Color lines;
@@ -133,7 +158,7 @@ public class VisionThread extends Thread {
      * @return The difference between the desired position and the current position of the target.
      */
     public double getError() {
-        return error;
+        return errorInPixels;
     }
 
     /**
@@ -149,6 +174,10 @@ public class VisionThread extends Thread {
         return timeOfTargetFind;
     }
 
+    public Integer getPositionWhenDetected() {
+        return positionWhenDetected;
+    }
+
     public boolean canSeeTarget() {
         return canSeeTarget;
     }
@@ -159,7 +188,7 @@ public class VisionThread extends Thread {
      * @return How many inches off-target we are. Returns null if the target is not in sight.
      */
     public Double getInchesFromTarget() {
-        return inchesFromTarget;
+        return errorInInches;
     }
 
     /**

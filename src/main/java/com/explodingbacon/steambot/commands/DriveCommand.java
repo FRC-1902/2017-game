@@ -1,13 +1,12 @@
 package com.explodingbacon.steambot.commands;
 
 import com.explodingbacon.bcnlib.actuators.MotorGroup;
-import com.explodingbacon.bcnlib.controllers.LogitechController;
 import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.Command;
+import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.utils.Utils;
 import com.explodingbacon.steambot.OI;
 import com.explodingbacon.steambot.Robot;
-import edu.wpi.first.wpilibj.DriverStation;
 
 public class DriveCommand extends Command {
 
@@ -83,6 +82,7 @@ public class DriveCommand extends Command {
         leftWasTrue = left;
         rightWasTrue = right;
 
+        /*
         boolean turnRight = drive.start.get();
         boolean turnLeft = drive.select.get();
 
@@ -102,14 +102,22 @@ public class DriveCommand extends Command {
         } else if (angle > 360) {
             angle = angle - 360;
         }
+        */
 
+        /*
         if(OI.slowButton.get()) {
             joyX *= 0.5;
             joyY *= 0.5;
             joyZ *= 0.5;
         }
+        */
 
-        Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle, true);
+        if (!Robot.drive.gyro.isPresent()) {
+            Robot.drive.xyzAbsoluteAngleDrive(joyX, joyY, joyZ);
+            Log.d("JoyZ: " + joyZ);
+        } else {
+            Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
+        }
 
         /*
         if (DriverStation.getInstance().getBatteryVoltage() <= 8) {

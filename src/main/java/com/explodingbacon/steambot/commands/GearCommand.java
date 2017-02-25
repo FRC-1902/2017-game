@@ -1,8 +1,6 @@
 package com.explodingbacon.steambot.commands;
 
 import com.explodingbacon.bcnlib.framework.Command;
-import com.explodingbacon.bcnlib.framework.Log;
-import com.explodingbacon.bcnlib.utils.Utils;
 import com.explodingbacon.steambot.OI;
 import com.explodingbacon.steambot.Robot;
 import com.explodingbacon.steambot.subsystems.GearSubsystem;
