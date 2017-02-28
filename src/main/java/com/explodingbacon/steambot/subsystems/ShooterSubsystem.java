@@ -25,6 +25,8 @@ public class ShooterSubsystem extends Subsystem {
     private double indexPow = 0.3;
     private double disturberPow = 0.7;
 
+    private final int SHOOTER_TWITCH_TIME = 150;
+
     //private final double SHOOTER_RPM = 80000; //TODO: tune
 
     public ShooterSubsystem() {
@@ -43,10 +45,10 @@ public class ShooterSubsystem extends Subsystem {
 
         //shootEncoder = new Encoder(Map.SHOOT_ENC_A, Map.SHOOT_ENC_B);
         //TODO: experiment with completely removing I and compare to the same PID with I
-        shootPID = new PIDController(shooter, shootEncoder, 0.000015, .00000085, .00001 * 2, 0.1, 1); //TODO: tune
+        shootPID = new PIDController(shooter, shootEncoder, 0.000025, .0000020, .00000, 0.1, 1); //TODO: tune
         //        shootPID = new PIDController(shooter, shootEncoder, 0.00002 / 2, .00000085, .00001, 0.1, 1); //TODO: tune
 
-        shootPID.setFinishedTolerance(400); //600
+        shootPID.setFinishedTolerance(1000); //600
 
         shootPID.setExtraCode(() -> {
             boolean done = shootPID.isDone();
@@ -92,10 +94,10 @@ public class ShooterSubsystem extends Subsystem {
                 disturber.setPower(disturberPow);
                 indexer.setPower(indexPow);
                 boopStart = System.currentTimeMillis();
-                Log.d("WANT TO SHOOT! Shoot encoder: " + shootEncoder.getForPID());
+                //Log.d("WANT TO SHOOT! Shoot encoder: " + shootEncoder.getForPID());
             }
         }
-        if (System.currentTimeMillis() - boopStart >= 150 || !shootPID.isEnabled() || !OI.shooterRev.get()) {
+        if (System.currentTimeMillis() - boopStart >= SHOOTER_TWITCH_TIME || !shootPID.isEnabled() || !OI.shooterRev.get()) {
             disturber.setPower(0);
             indexer.setPower(0);
         }

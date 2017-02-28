@@ -14,7 +14,7 @@ public class DriveCommand extends Command {
 
     private final double angleAdjustRate = 2;
 
-    private double joyX, joyY, joyZ;
+    private double joyX, joyY, joyX2, joyY2, joyZ;
     private MotorGroup left, right, strafe;
     private double angle = 0;
     private XboxController drive;
@@ -40,12 +40,21 @@ public class DriveCommand extends Command {
 
         joyX = drive.getX();
         joyY = -drive.getY();
-        joyZ = -drive.getX2();
+
+        joyX2 = drive.getX2();
+        joyY2 = -drive.getY2();
+
+        joyX2 *= 1;
+        joyY2 *= .75;
 
         //Log.d("joyZ: "+ joyZ);
 
         joyX = Math.pow(joyX, 2) * Utils.sign(joyX);
         joyY = Math.pow(joyY, 2) * Utils.sign(joyY);
+
+        joyX2 = Math.pow(joyX2, 2) * Utils.sign(joyX2);
+        joyY2 = Math.pow(joyY2, 2) * Utils.sign(joyY2);
+
         joyZ = Math.pow(joyZ, 2) * Utils.sign(joyZ);
 
         /*
@@ -56,6 +65,10 @@ public class DriveCommand extends Command {
 
         joyX = Utils.deadzone(joyX, deadzone);
         joyY = Utils.deadzone(joyY, deadzone);
+
+        joyX2 = Utils.deadzone(joyX2, deadzone);
+        joyY2 = Utils.deadzone(joyY2, deadzone);
+
         joyZ = Utils.deadzone(joyZ, deadzone);
 
         if(drive.x.get()) angle = 270;
@@ -75,15 +88,15 @@ public class DriveCommand extends Command {
         leftWasTrue = left;
         rightWasTrue = right;
 
-        if (Robot.drive.gyro.isPresent()) {
-           // Log.d("the Gyro: " + Robot.drive.gyro.getForPID());
-        }
-
         if (!Robot.drive.gyro.isPresent()) {
             Robot.drive.xyzDrive(joyX, joyY, joyZ);
             //Log.d("JoyZ: " + joyZ);
         } else {
-            Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
+            if (joyX2 == 0 && joyY2 == 0) {
+                Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
+            } else {
+                Robot.drive.xyzAbsoluteAngleDrive(joyX2, joyY2, angle);
+            }
         }
 
         /*
