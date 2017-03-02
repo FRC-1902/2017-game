@@ -22,14 +22,13 @@ public class VisionThread extends Thread {
     private double errorInPixels = 0;
     private Double errorInInches = null;
 
-    private final double TARGET_POS_OFFSET = -30.5; //10
+    private final double TARGET_POS_OFFSET = Robot.MAIN_ROBOT ? -30.5 : 33;
     private double gearPixelError;
 
     //TODO: catch the vision exception thing that ALWAYS happens
 
     @Override
     public void run() {
-        Log.v("Vision thread started.");
         UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
         camera.setFPS(5);
         camera.setResolution(320, 240);
@@ -43,6 +42,7 @@ public class VisionThread extends Thread {
         CameraSettings.setExposureAuto(1);
         CameraSettings.setExposure(9);
 
+        Log.v("Vision Processing online.");
         //noinspection InfiniteLoopStatement
         while (true) {
             long timeOfGet = System.currentTimeMillis();

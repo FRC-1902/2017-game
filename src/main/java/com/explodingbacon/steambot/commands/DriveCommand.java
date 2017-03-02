@@ -12,16 +12,12 @@ public class DriveCommand extends Command {
 
     private final double deadzone = 0.1;
 
-    private final double angleAdjustRate = 2;
-
     private double joyX, joyY, joyX2, joyY2, joyZ;
     private MotorGroup left, right, strafe;
     private double angle = 0;
     private XboxController drive;
 
     private boolean leftWasTrue = false, rightWasTrue = false;
-
-    private boolean leftTrigWasTrue = false, rightTrigWasTrue = false;
 
     @Override
     public void onInit() {
@@ -44,8 +40,8 @@ public class DriveCommand extends Command {
         joyX2 = drive.getX2();
         joyY2 = -drive.getY2();
 
-        joyX2 *= 1;
-        joyY2 *= .75;
+        joyX2 *= .75;
+        joyY2 *= 1;
 
         //Log.d("joyZ: "+ joyZ);
 
@@ -89,6 +85,7 @@ public class DriveCommand extends Command {
         rightWasTrue = right;
 
         if (!Robot.drive.gyro.isPresent()) {
+            Log.w("NO GYRO DETECTED, IN ROBOT CENTRIC DRIVE MODE");
             Robot.drive.xyzDrive(joyX, joyY, joyZ);
             //Log.d("JoyZ: " + joyZ);
         } else {

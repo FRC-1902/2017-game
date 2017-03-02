@@ -75,7 +75,7 @@ public class DriveSubsystem extends Subsystem {
         //0.00048, 0.000012, 0.004, 0.05, 1);
         //0.00088
 
-        //quad p, half i, double d
+        //TODO: figure out if this is right
         if(!Robot.MAIN_ROBOT) {
             strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.008, 0.000012, 0.001, 0.1, 1);
             strafePID.setFinishedTolerance(200); //TODO: tune?
@@ -84,7 +84,9 @@ public class DriveSubsystem extends Subsystem {
             strafePID.setFinishedTolerance(200);
         }
 
-        rotatePID = new PIDController(rotatePidOutput, gyro, 0.018, 0.0008, 0.09, 0.15, 1)
+
+        //        rotatePID = new PIDController(rotatePidOutput, gyro, 0.018, 0.0008, 0.09, 0.15, 1)
+        rotatePID = new PIDController(rotatePidOutput, gyro, 0.01, 0.0008 * 2, 0.09 * 1.5, 0.15, 1)
                 .setRotational(true); //TODO: Tune
 
         rotatePID.setInputInverted(true);
