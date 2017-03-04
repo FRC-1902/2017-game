@@ -56,7 +56,8 @@ public class VisionThread extends Thread {
 
             //use hue values that match the RGB appearance of the object
             //working h range 40-100
-            source.inRange(new HSV(40, 100, 100), new HSV(100, 255, 255));
+            //source.inRange(new HSV(40, 100, 100), new HSV(100, 255, 255));
+            source.inRange(new HSV(40, 100, 50), new HSV(100, 255, 255));
 
             List<Contour> allContours = source.getContours();
             List<Contour> correctContours = new ArrayList<>();

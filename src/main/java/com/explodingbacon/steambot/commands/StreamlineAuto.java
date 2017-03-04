@@ -16,13 +16,13 @@ public class StreamlineAuto extends Command {
         vision = Robot.visionThread;
     }
 
-    private final double offset = -4;
+    private final double offset = -2.5;
     private final double frontGearAngle = 0;
     private final double rightGearAngle = 36;
-    private final double leftGearAngle = 99999; //TODO: find (-36?)
+    private final double leftGearAngle = 360-36; //TODO: find (is it -36?)
 
     private final double findingTargetStrafeSpeed = 0.4;
-    private final double backUpSpeed = -0.4;
+    private final double backUpSpeed = -0.35;
 
     @Override
     public void onInit() {
@@ -40,22 +40,27 @@ public class StreamlineAuto extends Command {
             angle = frontGearAngle;
         }
 
-        angle += offset;
+        //angle += offset;
 
         if (angle < 0) angle = 360 + angle;
 
-        while (!vision.canSeeTarget() && Robot.isEnabled()) {
+        while (!(vision.canSeeTarget() && vision.getError() <= 100) && Robot.isEnabled()) {
             if (sideGear) {
                 if (rightSide) {
                     drive.fieldCentricAbsoluteAngleDrive(Math.cos(150) * findingTargetStrafeSpeed, Math.sin(150) * findingTargetStrafeSpeed,
-                            rightGearAngle + offset);
+                            angle); //formerly rightGeraAngle + offset;
                 } else {
-                    //TODO
+                    drive.fieldCentricAbsoluteAngleDrive((-Math.sin(360-120)) * findingTargetStrafeSpeed, (Math.cos(360/-120)) * findingTargetStrafeSpeed,
+                            angle);
+                    //Log.d("x: " + Math.cos(0) + ", y: " + Math.sin(0));
+
                 }
+            } else {
+                drive.fieldCentricAbsoluteAngleDrive(findingTargetStrafeSpeed, 0, angle); //0.4 worked
             }
-            drive.fieldCentricAbsoluteAngleDrive(findingTargetStrafeSpeed, 0, angle); //0.4 worked
         }
         Log.v("Found target");
+        drive.fieldCentricAbsoluteAngleDrive(0, 0, angle);
         if (Robot.isEnabled() && Robot.isAutonomous()) {
             Log.d("Strafe encoder value at detect: " + vision.getPositionWhenDetected() + "( current " + drive.strafeEncoder.get() + ")");
             //Log.v("Gear detected!");
@@ -79,15 +84,17 @@ public class StreamlineAuto extends Command {
                         //oldPos = -oldPos;
                         double target = oldPos - (drive.inchesToStrafeEncoder(errorInches));
                         //Log.d("Target: " + target);
-                        //target -= drive.inchesToStrafeEncoder(2);
-                        target /= Math.abs(Math.cos(Math.toRadians(offset)));
+                        if (rightSide) {
+                            //target -= drive.inchesToStrafeEncoder(1);
+                        }
+                        target /= Math.abs(Math.cos(Math.toRadians(drive.rotatePID.getCurrentError()))); //formerly angle - drive.gyro.getForPID()
                         drive.strafePID.setTarget(target);
                     } else {
                         //Log.w("Got null data for vision");
                     }
 
                     double speed;
-                    speed = timeElapsed >= 1400 ? 0.3 : 0.6; //.3 was good most of the time
+                    speed = timeElapsed >= 1400 ? 0.35 : 0.6; //.3 was good most of the time
                     if (timeElapsed < 1000) speed = 0; //Let PID adjust for 1 second before moving
                     /*
                     if (!drive.strafePID.isDone() && !wasAligned) {
@@ -104,20 +111,16 @@ public class StreamlineAuto extends Command {
                     */
 
                     if (speed == 0) {
-                        drive.keepHeading(angle);
+                        drive.keepHeading(angle + offset);
                     } else {
                         if (sideGear) {
-                            drive.fieldCentricAbsoluteAngleDrive(Math.cos(angle) * speed, Math.sin(angle) * speed, angle);
+                            //Log.d("FORWARD");
+                            //drive.fieldCentricAbsoluteAngleDrive(-Math.cos(angle) * speed, -Math.sin(angle) * speed, angle + offset);
                         } else {
-                            drive.fieldCentricAbsoluteAngleDrive(0, speed, angle);
+                            //drive.fieldCentricAbsoluteAngleDrive(0, speed, angle + offset);
                         }
+                        drive.xyzAbsoluteAngleDrive(0, speed, angle + offset);
                     }
-                    /*
-                    if (speed != 0) {
-                        drive.getLeftMotors().setPower(-speed);
-                        drive.getRightMotors().setPower(speed);
-                    }
-                    */
                     /*
                     if (speed == 0) {
                         drive.keepHeading(0);
@@ -130,17 +133,19 @@ public class StreamlineAuto extends Command {
                     Thread.sleep(250); //was 500
                 } catch (Exception e) {
                 }
-                //Log.d("Strafe encoder value at the end: " + drive.strafeEncoder.get() + ", final target was " + drive.strafePID.getTarget());
+                if (!Robot.gear.getDeployed() && touched) Robot.gear.setDeployed(true);
+                Log.d("Strafe encoder value at the end: " + drive.strafeEncoder.get() + ", final target was " + drive.strafePID.getTarget());
                 //Robot.drive.strafePID.disable(); //TODO: see if this is more accurate than the other one
                 millis = System.currentTimeMillis();
                 long diff;
                 while ((diff = Math.abs(millis - System.currentTimeMillis())) <= 1200) {
-                    if (diff >= 50 && !Robot.gear.getDeployed() && touched) Robot.gear.setDeployed(true);
+                    //if (diff >= 5 && !Robot.gear.getDeployed() && touched) Robot.gear.setDeployed(true);
                     if (sideGear) {
-                        drive.fieldCentricAbsoluteAngleDrive(Math.cos(angle) * backUpSpeed, Math.sin(angle) * backUpSpeed, angle - offset);
+                        //drive.fieldCentricAbsoluteAngleDrive(-Math.cos(angle) * backUpSpeed, -Math.sin(angle) * backUpSpeed, angle/* - offset*/);
                     } else {
-                        drive.fieldCentricAbsoluteAngleDrive(0, backUpSpeed, angle - offset);
+                        //drive.fieldCentricAbsoluteAngleDrive(0, backUpSpeed, angle - offset);
                     }
+                    drive.xyzAbsoluteAngleDrive(0, backUpSpeed, angle);
                 }
             }
             Robot.gear.setDeployed(false);

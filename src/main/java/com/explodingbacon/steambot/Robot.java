@@ -129,7 +129,7 @@ public class Robot extends RobotCore {
     @Override
     public void teleopPeriodic() {
         super.teleopPeriodic();
-        shooter.shootPID.logVerbose();
+        Log.d("Encoder: " + drive.strafeEncoder.get());
     }
 
     @Override

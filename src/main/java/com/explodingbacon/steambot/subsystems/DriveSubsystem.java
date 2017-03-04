@@ -76,13 +76,16 @@ public class DriveSubsystem extends Subsystem {
         //0.00088
 
         //TODO: figure out if this is right
-        if(!Robot.MAIN_ROBOT) {
+        /*
+        if(Robot.MAIN_ROBOT) {
             strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.008, 0.000012, 0.001, 0.1, 1);
             strafePID.setFinishedTolerance(200); //TODO: tune?
         } else {
-            strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0006, 0.000020, 0.001, 0.1, 1);
-            strafePID.setFinishedTolerance(200);
-        }
+        */
+        //        strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0006, 0.000020, 0.001, 0.1, 1);
+        strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0006, 0.000020, 0.0015, 0.1, 1);
+        strafePID.setFinishedTolerance(200);
+
 
 
         //        rotatePID = new PIDController(rotatePidOutput, gyro, 0.018, 0.0008, 0.09, 0.15, 1)
