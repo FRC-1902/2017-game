@@ -148,9 +148,16 @@ public class StreamlineAuto extends Command {
                     drive.xyzAbsoluteAngleDrive(0, backUpSpeed, angle);
                 }
             }
+            if (sideGear) {
+                if (rightSide) {
+                    drive.gyro.shiftZero(90);
+                } else {
+                    drive.gyro.shiftZero(-90);
+                }
+            }
             Robot.gear.setDeployed(false);
             drive.strafePID.disable(); //TODO: see if this is more accurate than the other
-            drive.fieldCentricAbsoluteAngleDrive(0, 0, angle);
+            drive.fieldCentricAbsoluteAngleDrive(0, 0, 0); //0, 0, angle
         } else {
             drive.fieldCentricAbsoluteAngleDrive(0, 0, drive.rotatePID.getTarget());
         }
