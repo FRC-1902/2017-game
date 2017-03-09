@@ -7,6 +7,7 @@ import edu.wpi.cscore.CvSink;
 import edu.wpi.cscore.CvSource;
 import edu.wpi.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.CameraServer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,8 +57,19 @@ public class VisionThread extends Thread {
 
             //use hue values that match the RGB appearance of the object
             //working h range 40-100
-            //source.inRange(new HSV(40, 100, 100), new HSV(100, 255, 255));
-            source.inRange(new HSV(40, 100, 50), new HSV(100, 255, 255));
+            if (Robot.VISION_TUNING) {
+                int hueLow = (int) Math.round(SmartDashboard.getNumber("VisionHue_Low", 40));
+                int saturationLow = (int) Math.round(SmartDashboard.getNumber("VisionSaturation_Low", 100));
+                int valueLow = (int) Math.round(SmartDashboard.getNumber("VisionValue_Low", 50));
+
+                int hueHigh = (int) Math.round(SmartDashboard.getNumber("VisionHue_High", 100));
+                int saturationHigh = (int) Math.round(SmartDashboard.getNumber("VisionSaturation_High", 255));
+                int valueHigh = (int) Math.round(SmartDashboard.getNumber("VisionValue_High", 255));
+
+                source.inRange(new HSV(hueLow, saturationLow, valueLow), new HSV(hueHigh, saturationHigh, valueHigh));
+            } else {
+                source.inRange(new HSV(40, 100, 50), new HSV(100, 255, 255));
+            }
 
             List<Contour> allContours = source.getContours();
             List<Contour> correctContours = new ArrayList<>();

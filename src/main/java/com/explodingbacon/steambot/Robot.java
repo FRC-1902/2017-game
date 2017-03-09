@@ -45,7 +45,8 @@ public class Robot extends RobotCore {
 
     private boolean rezeroed = false;
 
-    public static final boolean MAIN_ROBOT = false;
+    public static final boolean MAIN_ROBOT = true;
+    public static final boolean VISION_TUNING = true;
 
     public Robot(IterativeRobot r) {
         super(r);
@@ -72,6 +73,17 @@ public class Robot extends RobotCore {
         auto.addObject("Left", "left");
         auto.addObject("Right", "right");
         SmartDashboard.putData("Autonomous Picker", auto);
+
+        //source.inRange(new HSV(40, 100, 50), new HSV(100, 255, 255));
+        if (VISION_TUNING) {
+            SmartDashboard.putNumber("VisionHue_Low", 40);
+            SmartDashboard.putNumber("VisionSaturation_Low", 100);
+            SmartDashboard.putNumber("VisionValue_Low", 50);
+
+            SmartDashboard.putNumber("VisionHue_High", 100);
+            SmartDashboard.putNumber("VisionSaturation_High", 255);
+            SmartDashboard.putNumber("VisionValue_High", 255);
+        }
 
         Log.i("Air Pork " + (MAIN_ROBOT ? "One" : "Too") + " initialized.");
         if (!MAIN_ROBOT) Log.w("ROBOT IN PRACTICE MODE!");
