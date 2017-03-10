@@ -42,11 +42,12 @@ public class Robot extends RobotCore {
     public static VisionThread visionThread = new VisionThread();
     public static PositionLogThread positionLog = new PositionLogThread();
     public static SendableChooser auto;
+    public static SendableChooser baseLine;
 
     private boolean rezeroed = false;
 
     public static final boolean MAIN_ROBOT = true;
-    public static final boolean VISION_TUNING = true;
+    public static final boolean VISION_TUNING = false;
 
     public Robot(IterativeRobot r) {
         super(r);
@@ -73,6 +74,13 @@ public class Robot extends RobotCore {
         auto.addObject("Left", "left");
         auto.addObject("Right", "right");
         SmartDashboard.putData("Autonomous Picker", auto);
+
+        baseLine = new SendableChooser();
+        baseLine.initTable(NetworkTable.getTable("BaconTable"));
+        baseLine.addDefault("Yes", "yes");
+        baseLine.addObject("No", "no");
+        SmartDashboard.putData("Do Baseline after Auto", baseLine);
+
 
         //source.inRange(new HSV(40, 100, 50), new HSV(100, 255, 255));
         if (VISION_TUNING) {

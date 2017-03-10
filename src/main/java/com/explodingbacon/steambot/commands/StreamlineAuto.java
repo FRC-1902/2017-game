@@ -135,10 +135,10 @@ public class StreamlineAuto extends Command {
                 }
                 if (!Robot.gear.getDeployed() && touched) Robot.gear.setDeployed(true);
                 Log.d("Strafe encoder value at the end: " + drive.strafeEncoder.get() + ", final target was " + drive.strafePID.getTarget());
-                //Robot.drive.strafePID.disable(); //TODO: see if this is more accurate than the other one
                 millis = System.currentTimeMillis();
                 long diff;
-                while ((diff = Math.abs(millis - System.currentTimeMillis())) <= 1200) {
+                int backupTime = sideGear ? 1200 : 1200;
+                while ((diff = Math.abs(millis - System.currentTimeMillis())) <= backupTime) {
                     //if (diff >= 5 && !Robot.gear.getDeployed() && touched) Robot.gear.setDeployed(true);
                     if (sideGear) {
                         //drive.fieldCentricAbsoluteAngleDrive(-Math.cos(angle) * backUpSpeed, -Math.sin(angle) * backUpSpeed, angle/* - offset*/);
@@ -156,8 +156,14 @@ public class StreamlineAuto extends Command {
                 }
             }
             Robot.gear.setDeployed(false);
-            drive.strafePID.disable(); //TODO: see if this is more accurate than the other
-            drive.fieldCentricAbsoluteAngleDrive(0, 0, 0); //0, 0, angle
+            drive.strafePID.disable();
+            drive.fieldCentricAbsoluteAngleDrive(0, 0, 0);
+            if (sideGear && Robot.baseLine.getSelected().equals("yes")) {
+                long start = System.currentTimeMillis();
+                while (System.currentTimeMillis() - start < 1000 && Robot.isAutonomous() && Robot.isEnabled()) {
+                    drive.fieldCentricAbsoluteAngleDrive(0, .5, 0);
+                }
+            }
         } else {
             drive.fieldCentricAbsoluteAngleDrive(0, 0, drive.rotatePID.getTarget());
         }

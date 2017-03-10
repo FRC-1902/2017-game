@@ -17,6 +17,9 @@ public class DriveCommand extends Command {
     private double angle = 0;
     private XboxController drive;
 
+    private double pegAngle = 56.68;
+    private double feedAngle = 60.56;
+
     private boolean leftWasTrue = false, rightWasTrue = false;
 
     @Override
@@ -46,6 +49,7 @@ public class DriveCommand extends Command {
         //Log.d("joyZ: "+ joyZ);
 
         joyX = Math.pow(joyX, 2) * Utils.sign(joyX);
+        
         joyY = Math.pow(joyY, 2) * Utils.sign(joyY);
 
         joyX2 = Math.pow(joyX2, 2) * Utils.sign(joyX2);
@@ -67,18 +71,18 @@ public class DriveCommand extends Command {
 
         joyZ = Utils.deadzone(joyZ, deadzone);
 
-        if(drive.x.get()) angle = 270;
+        if(drive.x.get()) angle = 360 - pegAngle;
         if(drive.y.get()) angle = 0;
-        if(drive.b.get()) angle = 90;
+        if(drive.b.get()) angle = pegAngle;
         if(drive.a.get()) angle = 180;
 
         boolean left = drive.leftBumper.get();
         boolean right = drive.rightBumper.get();
 
         if (left && !leftWasTrue) {
-            angle -= 45;
+            angle -= feedAngle;
         } else if (right && !rightWasTrue) {
-            angle += 45;
+            angle += feedAngle;
         }
 
         leftWasTrue = left;

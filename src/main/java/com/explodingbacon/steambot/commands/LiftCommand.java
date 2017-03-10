@@ -15,22 +15,7 @@ public class LiftCommand extends Command {
 
     @Override
     public void onLoop() {
-        //lift.getLiftMotors().setPower(OI.liftStart.get() ? 1 : 0);
         lift.set(OI.liftStart.get() ? 1 : 0);
-
-        /*
-        if(OI.liftStart.get() && lift.get() < limit && !liftToggle){
-            liftToggle = true;
-        } else if(OI.liftStop.get() && liftToggle){
-            liftToggle = false;
-        } else liftToggle = false;
-
-        if(liftToggle){
-            lift.set(liftPow);
-        } else{
-            lift.set(0);
-        }
-        */
     }
 
     @Override
