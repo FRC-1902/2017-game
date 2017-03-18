@@ -7,10 +7,10 @@ public class Map {
     public static int LEFT_DRIVE_2 = Robot.MAIN_ROBOT ? 3 : 6;
 
     public static int RIGHT_DRIVE_1 = Robot.MAIN_ROBOT ? 0 : 8;
-    public static int RIGHT_DRIVE_2 = Robot.MAIN_ROBOT ? 5 : 9;
+    public static int RIGHT_DRIVE_2 = Robot.MAIN_ROBOT ? 5 : 4;
 
-    public static int STRAFE_DRIVE_1 = 4;
-    public static int STRAFE_DRIVE_2 = 2;
+    public static int STRAFE_DRIVE_1 = Robot.MAIN_ROBOT ? 4 : 2;
+    public static int STRAFE_DRIVE_2 = Robot.MAIN_ROBOT ? 2 : 1;
 
     public static int LIFT_DRIVE_1 = Robot.MAIN_ROBOT ? 6 : 5;
     public static int LIFT_DRIVE_2 = 7;

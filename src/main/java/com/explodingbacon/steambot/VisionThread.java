@@ -41,7 +41,7 @@ public class VisionThread extends Thread {
         Image output;
 
         CameraSettings.setExposureAuto(1);
-        CameraSettings.setExposure(1); //9
+        CameraSettings.setExposure(Robot.MAIN_ROBOT ? 1 : 9); //9
 
         Log.v("Vision Processing online.");
         //noinspection InfiniteLoopStatement

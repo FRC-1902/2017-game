@@ -86,20 +86,28 @@ public class ShooterSubsystem extends Subsystem {
         //shootPID.setTarget(0);
     }
 
+    public void justShoot() {
+        disturber.setPower(disturberPow);
+        indexer.setPower(indexPow);
+    }
+
+    public void stopShoot() {
+        disturber.setPower(0);
+        indexer.setPower(0);
+    }
+
     private long boopStart = 0;
     public void shoot(boolean upToSpeed){
         if (shootPID.isEnabled()) {
             //Log.d("Done = " + done);
             if (upToSpeed && OI.shooterRev.get() && OI.shoot.get()) {
-                disturber.setPower(disturberPow);
-                indexer.setPower(indexPow);
+                justShoot();
                 boopStart = System.currentTimeMillis();
                 //Log.d("WANT TO SHOOT! Shoot encoder: " + shootEncoder.getForPID());
             }
         }
         if (System.currentTimeMillis() - boopStart >= SHOOTER_TWITCH_TIME || !shootPID.isEnabled() || !OI.shooterRev.get()) {
-            disturber.setPower(0);
-            indexer.setPower(0);
+            stopShoot();
         }
     }
 

@@ -82,8 +82,8 @@ public class DriveSubsystem extends Subsystem {
             strafePID.setFinishedTolerance(200); //TODO: tune?
         } else {
         */
-        //        strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0006, 0.000020, 0.001, 0.1, 1);
-        strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0006, 0.000020, 0.0015, 0.1, 1);
+        //        strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0006, 0.000020, 0.0015, 0.1, 1);
+        strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0012, 0.000020, 0.0015, 0.1, 1);
         strafePID.setFinishedTolerance(200);
 
 
@@ -252,6 +252,16 @@ public class DriveSubsystem extends Subsystem {
         //theoretically, ySet should be equal to y/cos, and xSet should be equal to x/sin
 
         setFiltered(ySet + z, z - ySet, xSet + strafePidOutput.getPower());
+    }
+
+    /**
+     *
+     * @param direction Driving direction(in degrees)
+     * @param magnitude Drive speed(0 to 1)
+     * @param heading Direction of heading(in degrees)
+     */
+    public void fieldCentricDirectionalAbsoluteAngleDrive(double direction, double magnitude, double heading){
+        fieldCentricAbsoluteAngleDrive(Math.sin(direction) * magnitude, Math.cos(direction) * magnitude, heading);
     }
 
     public void keepHeading(double heading) {

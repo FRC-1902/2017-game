@@ -6,20 +6,20 @@ import com.explodingbacon.steambot.Robot;
 import com.explodingbacon.steambot.VisionThread;
 import com.explodingbacon.steambot.subsystems.DriveSubsystem;
 
-public class StreamlineAuto extends Command {
+public class BetterAuto extends Command {
 
     DriveSubsystem drive;
     VisionThread vision;
 
-    public StreamlineAuto() {
+    public BetterAuto() {
         drive = Robot.drive;
         vision = Robot.visionThread;
     }
 
     private final double offset = -2.5;
     private final double frontGearAngle = 0;
-    private final double rightGearAngle = 36;
-    private final double leftGearAngle = 360-36; //TODO: find (is it -36?)
+    private final double rightGearAngle = DriveCommand.pegAngle;
+    private final double leftGearAngle = 360 - DriveCommand.pegAngle; //TODO: find (is it -36?)
 
     private final double findingTargetStrafeSpeed = 0.4;
     private final double backUpSpeed = -0.35;
@@ -39,6 +39,7 @@ public class StreamlineAuto extends Command {
         if (shoot) {
             long shootStart = System.currentTimeMillis();
             boolean reachedSpeed = false;
+            /*
             while (System.currentTimeMillis() - shootStart <= 7000 && Robot.isEnabled() && Robot.isEnabled()) {
                 Robot.shooter.rev();
                 if (Robot.shooter.shootPID.isDone()) reachedSpeed = true;
@@ -48,10 +49,14 @@ public class StreamlineAuto extends Command {
             }
             Robot.shooter.stopRev();
             Robot.shooter.stopShoot();
+            */
 
+            try {
+                Thread.sleep(1500);
+            } catch (Exception e) {}
             //BLUES BOILER IS ON THE LEFT
 
-            double shift = 90;
+            double shift = blue ? -90 : 90;
             if (sideGear) {
                 if (blue) {
                     if (rightSide) {
@@ -70,6 +75,14 @@ public class StreamlineAuto extends Command {
                 }
             }
             drive.gyro.shiftZero(shift);
+        }
+
+        if (sideGear) {
+            if (rightSide) {
+                drive.gyro.shiftZero(90);
+            } else {
+                drive.gyro.shiftZero(-90);
+            }
         }
 
         double angle;
@@ -94,16 +107,14 @@ public class StreamlineAuto extends Command {
             }
         }
 
-        while (!(vision.canSeeTarget() && vision.getError() <= 100) && Robot.isEnabled()) {
+        while (!(vision.canSeeTarget() /*&& vision.getError() <= 100*/) && Robot.isEnabled()) {
             if (sideGear) {
                 if (rightSide) {
-                    drive.fieldCentricAbsoluteAngleDrive(Math.cos(150) * findingTargetStrafeSpeed, Math.sin(150) * findingTargetStrafeSpeed,
-                            angle);
+                    drive.fieldCentricDirectionalAbsoluteAngleDrive(angle, findingTargetStrafeSpeed, angle);
+                    //drive.fieldCentricAbsoluteAngleDrive(Math.sin(45) * findingTargetStrafeSpeed, Math.cos(45) * findingTargetStrafeSpeed, angle);
                 } else {
-                    drive.fieldCentricAbsoluteAngleDrive((-Math.sin(360-120)) * findingTargetStrafeSpeed, (Math.cos(360/-120)) * findingTargetStrafeSpeed,
-                            angle);
-                    //Log.d("x: " + Math.cos(0) + ", y: " + Math.sin(0));
-
+                    drive.fieldCentricDirectionalAbsoluteAngleDrive(360 - angle, findingTargetStrafeSpeed, angle);
+                    //drive.fieldCentricAbsoluteAngleDrive(Math.sin(360 - 45) * findingTargetStrafeSpeed, Math.cos(360 - 45) * findingTargetStrafeSpeed, angle);
                 }
             } else {
                 drive.fieldCentricAbsoluteAngleDrive(findingTargetStrafeSpeed * (!blue && shoot ? -1 : 1), 0, angle); //0.4 worked
@@ -121,12 +132,12 @@ public class StreamlineAuto extends Command {
 
             boolean touched = false;
 
-            while (!touched && Robot.isAutonomous()) {
-                Log.v("Starting vision attempts");
+            Log.v("Starting vision attempts");
+            while (!touched && Robot.isAutonomous() && Robot.isEnabled()) {
                 Robot.gear.setDeployed(false);
                 drive.strafePID.enable();
                 //TODO: adjust timeout based off of which auto we're doing
-                while (!(touched = Robot.gear.getTouchSensor()) && (timeElapsed = Math.abs(millis - System.currentTimeMillis())) <= 7000) {
+                while (!(touched = Robot.gear.getTouchSensor()) && (timeElapsed = Math.abs(millis - System.currentTimeMillis())) <= 7000 && Robot.isAutonomous() && Robot.isEnabled()) {
                     Log.v("Approaching peg");
                     Integer oldPos = vision.getPositionWhenDetected();
 
@@ -135,6 +146,7 @@ public class StreamlineAuto extends Command {
                         double target = oldPos - (drive.inchesToStrafeEncoder(errorInches));
                         //Log.d("Target: " + target);
                         target /= Math.abs(Math.cos(Math.toRadians(drive.rotatePID.getCurrentError()))); //formerly angle - drive.gyro.getForPID()
+                        //if (!sideGear) target += drive.inchesToStrafeEncoder(1.5);
                         drive.strafePID.setTarget(target);
                     } else {
                         //Log.w("Got null data for vision");
@@ -153,14 +165,16 @@ public class StreamlineAuto extends Command {
                 }
                 try {
                     Thread.sleep(250); //was 500
-                } catch (Exception e) {
-                }
+                } catch (Exception e) {}
                 if (!Robot.gear.getDeployed() && touched) Robot.gear.setDeployed(true);
+                try {
+                    Thread.sleep(250); //was 500
+                } catch (Exception e) {}
                 Log.d("Strafe encoder value at the end: " + drive.strafeEncoder.get() + ", final target was " + drive.strafePID.getTarget());
                 millis = System.currentTimeMillis();
                 long diff;
                 int backupTime = sideGear ? 1200 : 1200;
-                while ((diff = Math.abs(millis - System.currentTimeMillis())) <= backupTime) {
+                while ((diff = Math.abs(millis - System.currentTimeMillis())) <= backupTime && Robot.isAutonomous() && Robot.isEnabled()) {
                     Log.v("Backing up");
                     drive.xyzAbsoluteAngleDrive(0, backUpSpeed, angle);
                 }
@@ -169,14 +183,6 @@ public class StreamlineAuto extends Command {
             Robot.gear.setDeployed(false);
             drive.strafePID.disable();
             if (sideGear && Robot.baseLine.getSelected().toString().equalsIgnoreCase("yes")) {
-                if (sideGear) {
-                    if (rightSide) {
-                        drive.gyro.shiftZero(90);
-                    } else {
-                        drive.gyro.shiftZero(-90);
-                    }
-                    didZero = true;
-                }
                 long start = System.currentTimeMillis();
                 while (System.currentTimeMillis() - start < 1000 && Robot.isAutonomous() && Robot.isEnabled()) {
                     drive.fieldCentricAbsoluteAngleDrive(0, .5, 0);
@@ -189,15 +195,6 @@ public class StreamlineAuto extends Command {
         } else {
             drive.fieldCentricAbsoluteAngleDrive(0, 0, drive.rotatePID.getTarget());
         }
-        if (sideGear && !didZero) {
-            if (rightSide) {
-                drive.gyro.shiftZero(90);
-            } else {
-                drive.gyro.shiftZero(-90);
-            }
-            //didZero = true;
-        }
-        Log.v("Angle fixed.");
     }
 
     @Override

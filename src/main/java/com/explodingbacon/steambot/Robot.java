@@ -43,10 +43,11 @@ public class Robot extends RobotCore {
     public static PositionLogThread positionLog = new PositionLogThread();
     public static SendableChooser auto;
     public static SendableChooser baseLine;
+    public static SendableChooser alliance;
 
     private boolean rezeroed = false;
 
-    public static final boolean MAIN_ROBOT = true;
+    public static final boolean MAIN_ROBOT = false;
     public static final boolean VISION_TUNING = false;
 
     public Robot(IterativeRobot r) {
@@ -60,7 +61,7 @@ public class Robot extends RobotCore {
         vision = new VisionSubsystem();
         gear = new GearSubsystem();
         lift = new LiftSubsystem();
-        shooter = new ShooterSubsystem();
+        if (MAIN_ROBOT) shooter = new ShooterSubsystem();
 
         if (Vision.isInit()) visionThread.start();
 
@@ -80,6 +81,12 @@ public class Robot extends RobotCore {
         baseLine.addDefault("Yes", "yes");
         baseLine.addObject("No", "no");
         SmartDashboard.putData("Do Baseline after Auto", baseLine);
+
+        alliance = new SendableChooser();
+        alliance.initTable(NetworkTable.getTable("BaconTable"));
+        alliance.addDefault("Blue", "blue");
+        alliance.addObject("Red", "red");
+        SmartDashboard.putData("Which Alliance", alliance);
 
 
         //source.inRange(new HSV(40, 100, 50), new HSV(100, 255, 255));
@@ -124,16 +131,16 @@ public class Robot extends RobotCore {
     public void autonomousInit() {
         super.autonomousInit();
 
-        //OI.runCommand(new StreamlineAuto());
-        OI.runCommand(new BaselineAuto());
-
         Log.i("Autonomous init!");
+
+        OI.runCommand(new BetterAuto());
+        //OI.runCommand(new StreamlineAuto());
+        //OI.runCommand(new BaselineAuto());
     }
 
     @Override
     public void autonomousPeriodic() {
         super.autonomousPeriodic();
-        Log.d("Encoder: " + drive.strafeEncoder.get());
     }
 
     @Override
@@ -143,7 +150,7 @@ public class Robot extends RobotCore {
         OI.runCommand(new DriveCommand());
         OI.runCommand(new GearCommand());
         OI.runCommand(new LiftCommand());
-        OI.runCommand(new ShooterCommand());
+        if (MAIN_ROBOT) OI.runCommand(new ShooterCommand());
 
         Log.i("Teleop init!");
     }
@@ -151,7 +158,6 @@ public class Robot extends RobotCore {
     @Override
     public void teleopPeriodic() {
         super.teleopPeriodic();
-        //Log.d("Encoder: " + drive.strafeEncoder.get());
     }
 
     @Override

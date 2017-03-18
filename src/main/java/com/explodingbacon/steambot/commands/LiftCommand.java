@@ -15,7 +15,13 @@ public class LiftCommand extends Command {
 
     @Override
     public void onLoop() {
-        lift.set(OI.liftStart.get() ? 1 : 0);
+        if (OI.liftFast.get()) {
+            lift.set(1);
+        } else if (OI.liftSlow.get()) {
+            lift.set(.8);
+        } else {
+            lift.set(0);
+        }
     }
 
     @Override

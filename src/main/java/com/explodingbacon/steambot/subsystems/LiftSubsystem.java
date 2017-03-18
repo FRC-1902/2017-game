@@ -17,7 +17,7 @@ public class LiftSubsystem extends Subsystem {
         if (Robot.MAIN_ROBOT) {
             liftMotors.setInverts(true, false);
         } else {
-            liftMotors.setInverts(true, false);
+            liftMotors.setInverts(false, false);
         }
     }
 

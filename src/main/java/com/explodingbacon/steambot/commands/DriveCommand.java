@@ -17,8 +17,8 @@ public class DriveCommand extends Command {
     private double angle = 0;
     private XboxController drive;
 
-    private double pegAngle = 56.68;
-    private double feedAngle = 60.56;
+    public static final double pegAngle = Robot.MAIN_ROBOT ? 56.68 : 45;
+    public static final double feedAngle = Robot.MAIN_ROBOT ? 60.56 : 45;
 
     private boolean leftWasTrue = false, rightWasTrue = false;
 
@@ -99,6 +99,8 @@ public class DriveCommand extends Command {
                 Robot.drive.xyzAbsoluteAngleDrive(joyX2, joyY2, angle);
             }
         }
+
+        Robot.vision.setRingLight(!OI.ringlightOff.get());
 
         /*
         if (DriverStation.getInstance().getBatteryVoltage() <= 8) {
