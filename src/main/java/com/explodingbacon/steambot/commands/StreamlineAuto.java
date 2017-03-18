@@ -26,6 +26,8 @@ public class StreamlineAuto extends Command {
 
     @Override
     public void onInit() {
+        boolean didZero = false;
+
         boolean sideGear = !Robot.auto.getSelected().toString().equalsIgnoreCase("front");
         boolean rightSide = Robot.auto.getSelected().toString().equalsIgnoreCase("right");
 
@@ -59,10 +61,10 @@ public class StreamlineAuto extends Command {
                 drive.fieldCentricAbsoluteAngleDrive(findingTargetStrafeSpeed, 0, angle); //0.4 worked
             }
         }
-        Log.v("Found target");
+        Log.v("FOUND MATCH");
         drive.fieldCentricAbsoluteAngleDrive(0, 0, angle);
         if (Robot.isEnabled() && Robot.isAutonomous()) {
-            Log.d("Strafe encoder value at detect: " + vision.getPositionWhenDetected() + "( current " + drive.strafeEncoder.get() + ")");
+            //Log.d("Strafe encoder value at detect: " + vision.getPositionWhenDetected() + "( current " + drive.strafeEncoder.get() + ")");
             //Log.v("Gear detected!");
 
             long millis = System.currentTimeMillis();
@@ -71,12 +73,14 @@ public class StreamlineAuto extends Command {
             boolean touched = false;
 
             while (!touched && Robot.isAutonomous()) {
+                Log.v("Starting vision attempts");
                 Robot.gear.setDeployed(false);
                 drive.strafePID.enable();
                 boolean wasAligned = false;
                 long timeOfAlign = -1;
                 //TODO: adjust timeout based off of which auto we're doing
                 while (!(touched = Robot.gear.getTouchSensor()) && (timeElapsed = Math.abs(millis - System.currentTimeMillis())) <= 7000) {
+                    Log.v("Approaching peg");
                     Integer oldPos = vision.getPositionWhenDetected();
 
                     Double errorInches = vision.getInchesFromTarget();
@@ -94,7 +98,8 @@ public class StreamlineAuto extends Command {
                     }
 
                     double speed;
-                    speed = timeElapsed >= 1400 ? 0.35 : 0.6; //.3 was good most of the time
+                    int accelTime = sideGear ? 1400 : 1425;
+                    speed = timeElapsed >= accelTime ? 0.35 : 0.6; //.3 was good most of the time
                     if (timeElapsed < 1000) speed = 0; //Let PID adjust for 1 second before moving
                     /*
                     if (!drive.strafePID.isDone() && !wasAligned) {
@@ -139,6 +144,7 @@ public class StreamlineAuto extends Command {
                 long diff;
                 int backupTime = sideGear ? 1200 : 1200;
                 while ((diff = Math.abs(millis - System.currentTimeMillis())) <= backupTime) {
+                    Log.v("Backing up");
                     //if (diff >= 5 && !Robot.gear.getDeployed() && touched) Robot.gear.setDeployed(true);
                     if (sideGear) {
                         //drive.fieldCentricAbsoluteAngleDrive(-Math.cos(angle) * backUpSpeed, -Math.sin(angle) * backUpSpeed, angle/* - offset*/);
@@ -148,24 +154,36 @@ public class StreamlineAuto extends Command {
                     drive.xyzAbsoluteAngleDrive(0, backUpSpeed, angle);
                 }
             }
-            if (sideGear) {
-                if (rightSide) {
-                    drive.gyro.shiftZero(90);
-                } else {
-                    drive.gyro.shiftZero(-90);
-                }
-            }
+
             Robot.gear.setDeployed(false);
             drive.strafePID.disable();
-            drive.fieldCentricAbsoluteAngleDrive(0, 0, 0);
-            if (sideGear && Robot.baseLine.getSelected().equals("yes")) {
+            if (sideGear && Robot.baseLine.getSelected().toString().equalsIgnoreCase("yes")) {
+                if (sideGear) {
+                    if (rightSide) {
+                        drive.gyro.shiftZero(90);
+                    } else {
+                        drive.gyro.shiftZero(-90);
+                    }
+                    didZero = true;
+                }
                 long start = System.currentTimeMillis();
                 while (System.currentTimeMillis() - start < 1000 && Robot.isAutonomous() && Robot.isEnabled()) {
                     drive.fieldCentricAbsoluteAngleDrive(0, .5, 0);
                 }
+                //drive.fieldCentricAbsoluteAngleDrive(0, 0, 0);
+            }
+            while (Robot.isAutonomous() && Robot.isEnabled()) {
+                drive.fieldCentricAbsoluteAngleDrive(0, 0, 0);
             }
         } else {
             drive.fieldCentricAbsoluteAngleDrive(0, 0, drive.rotatePID.getTarget());
+        }
+        if (sideGear && !didZero) {
+            if (rightSide) {
+                drive.gyro.shiftZero(90);
+            } else {
+                drive.gyro.shiftZero(-90);
+            }
         }
     }
 

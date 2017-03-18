@@ -124,7 +124,8 @@ public class Robot extends RobotCore {
     public void autonomousInit() {
         super.autonomousInit();
 
-        OI.runCommand(new StreamlineAuto());
+        //OI.runCommand(new StreamlineAuto());
+        OI.runCommand(new BaselineAuto());
 
         Log.i("Autonomous init!");
     }
@@ -132,6 +133,7 @@ public class Robot extends RobotCore {
     @Override
     public void autonomousPeriodic() {
         super.autonomousPeriodic();
+        Log.d("Encoder: " + drive.strafeEncoder.get());
     }
 
     @Override
@@ -149,12 +151,13 @@ public class Robot extends RobotCore {
     @Override
     public void teleopPeriodic() {
         super.teleopPeriodic();
-        Log.d("Encoder: " + drive.strafeEncoder.get());
+        //Log.d("Encoder: " + drive.strafeEncoder.get());
     }
 
     @Override
     public void disabledPeriodic() {
         super.disabledPeriodic();
+        //Log.d("Encoder: " + drive.strafeEncoder.get());
     }
 
     @Override

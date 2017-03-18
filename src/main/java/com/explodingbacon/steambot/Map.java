@@ -30,7 +30,7 @@ public class Map {
 
     //Solenoid
     public static int GEAR_SOLENOID = Robot.MAIN_ROBOT ? 3 : 1;
-    public static int GEAR_SOLENOID_B = 2; //PRACTICE ROBOT ONLY
-    public static int RING_LIGHT = 7;
+    public static int GEAR_SOLENOID_B = 2; //REAL ROBOT ONLY
+    public static int RING_LIGHT = Robot.MAIN_ROBOT ? 6 : 7;
 
 }

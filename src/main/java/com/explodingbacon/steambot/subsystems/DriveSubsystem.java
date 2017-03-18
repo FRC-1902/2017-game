@@ -269,7 +269,7 @@ public class DriveSubsystem extends Subsystem {
      * @return The encoder clicks equivalent to the inches provided.
      */
     public double inchesToStrafeEncoder(double inches) {
-        return inches / (Math.PI * 4) * 1440;
+        return inches / (Math.PI * 4) * 360;
     }
 
     public MotorGroup getLeftMotors() {

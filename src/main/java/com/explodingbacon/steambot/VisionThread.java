@@ -41,7 +41,7 @@ public class VisionThread extends Thread {
         Image output;
 
         CameraSettings.setExposureAuto(1);
-        CameraSettings.setExposure(9);
+        CameraSettings.setExposure(1); //9
 
         Log.v("Vision Processing online.");
         //noinspection InfiniteLoopStatement
@@ -58,6 +58,7 @@ public class VisionThread extends Thread {
             //use hue values that match the RGB appearance of the object
             //working h range 40-100
             if (Robot.VISION_TUNING) {
+                /*
                 int hueLow = (int) Math.round(SmartDashboard.getNumber("VisionHue_Low", 40));
                 int saturationLow = (int) Math.round(SmartDashboard.getNumber("VisionSaturation_Low", 100));
                 int valueLow = (int) Math.round(SmartDashboard.getNumber("VisionValue_Low", 50));
@@ -67,15 +68,16 @@ public class VisionThread extends Thread {
                 int valueHigh = (int) Math.round(SmartDashboard.getNumber("VisionValue_High", 255));
 
                 source.inRange(new HSV(hueLow, saturationLow, valueLow), new HSV(hueHigh, saturationHigh, valueHigh));
+                */
             } else {
-                source.inRange(new HSV(40, 100, 50), new HSV(100, 255, 255));
+                source.inRange(new HSV(60, 150, 50), new HSV(110, 255, 255));
             }
 
             List<Contour> allContours = source.getContours();
             List<Contour> correctContours = new ArrayList<>();
 
             for (Contour c : allContours) {
-                if (c.getArea() > 100 && c.getArea() < 2500 && c.getY() > (source.getHeight() / 3)) {
+                if (c.getArea() > 100 && c.getArea() < 2500/* && c.getY() > (source.getHeight() / 3)*/) {
                     correctContours.add(c);
                 }
             }
@@ -84,19 +86,23 @@ public class VisionThread extends Thread {
 
             if (correctContours.size() > 0) {
                 //TODO: make sure this sorting puts the highest area contours at the top of the list
-                Collections.sort(correctContours, (o1, o2) -> Utils.round(o1.getArea() - o2.getArea()));
+                Collections.sort(correctContours, (o1, o2) -> Utils.round(o2.getArea() - o1.getArea()));
 
                 List<Contour> contoursWithinRange = new ArrayList<>();
                 for (Contour c1 : correctContours) {
                     for (Contour c2 : correctContours) {
-                        double diff = c1.getMiddleX() - c2.getMiddleX();
-                        double avgWidth = (c1.getWidth() + c2.getWidth()) / 2;
-                        double pixelsPerInch = avgWidth / 2;
-                        diff /= pixelsPerInch;
-                        if (Math.abs(diff) > 5 && Math.abs(diff) < 10) {
-                            if (!contoursWithinRange.contains(c1) || !contoursWithinRange.contains(c2)) {
-                                contoursWithinRange.add(c1);
-                                contoursWithinRange.add(c2);
+                        if (c1 != c2) {
+                            double diff = Math.abs(c1.getMiddleX() - c2.getMiddleX());
+                            double avgWidth = Math.abs((c1.getWidth() + c2.getWidth()) / 2);
+                            double pixelsPerInch = avgWidth / 2;
+                            diff /= pixelsPerInch;
+                            //Log.d("Pixels: " + diff);
+                            // > 5, < 10
+                            if (diff > 4 && diff < 11) {
+                                if (!contoursWithinRange.contains(c1) || !contoursWithinRange.contains(c2)) {
+                                    contoursWithinRange.add(c1);
+                                    contoursWithinRange.add(c2);
+                                }
                             }
                         }
                     }
@@ -110,6 +116,8 @@ public class VisionThread extends Thread {
                     double aligned = (source.getWidth() / 2) + TARGET_POS_OFFSET;
                     //Log.d("ContoursWithinRange: " + contoursWithinRange.size());
                     if (contoursWithinRange.size() == 2) {
+                        //Log.d("TARGET SEEABLE");
+
                         canSeeTarget = true;
                         Contour target1 = contoursWithinRange.get(0);
                         Contour target2 = contoursWithinRange.get(1);
@@ -139,13 +147,13 @@ public class VisionThread extends Thread {
                         timeOfTargetFind = timeOfGet;
 
                         //output.drawLine(Utils.round(aligned + TARGET_POS_OFFSET), Color.WHITE);
-                        output.drawLine(Utils.round(targetPos), Color.YELLOW);
 
                     } else {
                         errorInInches = null;
                         positionWhenDetected = null;
                         canSeeTarget = false;
                     }
+                    output.drawContours(contoursWithinRange, Color.YELLOW);
                     Color lines;
                     if (atTarget) {
                         lines = Color.ORANGE;
@@ -158,6 +166,7 @@ public class VisionThread extends Thread {
                 }
             }
 
+            //output.drawContours(allContours, Color.YELLOW);
             output.drawContours(correctContours, Color.RED);
 
             outputStream.putFrame(output.getMat());
