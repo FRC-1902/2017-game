@@ -71,9 +71,11 @@ public class DriveCommand extends Command {
 
         joyZ = Utils.deadzone(joyZ, deadzone);
 
-        if(drive.x.get()) angle = 360 - pegAngle;
+        if(drive.x.get()) angle = 360 - feedAngle;
+        //if(drive.x.get()) angle = 360 - pegAngle;
         if(drive.y.get()) angle = 0;
-        if(drive.b.get()) angle = pegAngle;
+        if(drive.b.get()) angle = feedAngle;
+        //if(drive.b.get()) angle = pegAngle;
         if(drive.a.get()) angle = 180;
 
         boolean left = drive.leftBumper.get();

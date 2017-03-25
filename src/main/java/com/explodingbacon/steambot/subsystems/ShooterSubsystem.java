@@ -15,6 +15,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import java.util.List;
 
+//291.375 for right boiler
+
 public class ShooterSubsystem extends Subsystem {
     private MotorGroup shooter;
     private Motor disturber, indexer;
@@ -22,8 +24,8 @@ public class ShooterSubsystem extends Subsystem {
     public PIDController shootPID;
 
    //TODO: tune
-    private double indexPow = 0.3;
-    private double disturberPow = 0.7;
+    private double indexPow = 0.3; //.3
+    private double disturberPow = 0.4; //.7
 
     private final int SHOOTER_TWITCH_TIME = 150;
 

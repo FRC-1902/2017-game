@@ -15,7 +15,7 @@ public class LiftSubsystem extends Subsystem {
     public LiftSubsystem() {
         liftMotors = new MotorGroup(VictorSP.class, Map.LIFT_DRIVE_1, Map.LIFT_DRIVE_2);
         if (Robot.MAIN_ROBOT) {
-            liftMotors.setInverts(true, false);
+            liftMotors.setInverts(false, false); //climber 1.0 is false false, 2.0 is true true
         } else {
             liftMotors.setInverts(false, false);
         }

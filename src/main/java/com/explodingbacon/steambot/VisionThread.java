@@ -23,15 +23,22 @@ public class VisionThread extends Thread {
     private double errorInPixels = 0;
     private Double errorInInches = null;
 
-    private final double TARGET_POS_OFFSET = Robot.MAIN_ROBOT ? -30.5 : 33;
+    private final double TARGET_POS_OFFSET = Robot.MAIN_ROBOT ? 0 : 33;
     private double gearPixelError;
+
+    //source.inRange(new HSV(60, 150, 50), new HSV(110, 255, 255));
+
+    public final int hLow = 60, sLow = 150, vLow = 50;
+    public final int hHigh = 110, sHigh = 255, vHigh = 255;
+
+    public static final int VISION_EXPOSURE = Robot.MAIN_ROBOT ? 1 : 9;
 
     //TODO: catch the vision exception thing that ALWAYS happens
 
     @Override
     public void run() {
         UsbCamera camera = CameraServer.getInstance().startAutomaticCapture();
-        camera.setFPS(5);
+        camera.setFPS(5); //60
         camera.setResolution(320, 240);
 
         CvSink cvSink = CameraServer.getInstance().getVideo();
@@ -41,7 +48,7 @@ public class VisionThread extends Thread {
         Image output;
 
         CameraSettings.setExposureAuto(1);
-        CameraSettings.setExposure(Robot.MAIN_ROBOT ? 1 : 9); //9
+        CameraSettings.setExposure(VISION_EXPOSURE); //9
 
         Log.v("Vision Processing online.");
         //noinspection InfiniteLoopStatement
@@ -58,7 +65,7 @@ public class VisionThread extends Thread {
             //use hue values that match the RGB appearance of the object
             //working h range 40-100
             if (Robot.VISION_TUNING) {
-                /*
+
                 int hueLow = (int) Math.round(SmartDashboard.getNumber("VisionHue_Low", 40));
                 int saturationLow = (int) Math.round(SmartDashboard.getNumber("VisionSaturation_Low", 100));
                 int valueLow = (int) Math.round(SmartDashboard.getNumber("VisionValue_Low", 50));
@@ -68,9 +75,10 @@ public class VisionThread extends Thread {
                 int valueHigh = (int) Math.round(SmartDashboard.getNumber("VisionValue_High", 255));
 
                 source.inRange(new HSV(hueLow, saturationLow, valueLow), new HSV(hueHigh, saturationHigh, valueHigh));
-                */
+
             } else {
-                source.inRange(new HSV(60, 150, 50), new HSV(110, 255, 255));
+                //source.inRange(new HSV(60, 150, 50), new HSV(110, 255, 255));
+                source.inRange(new HSV(hLow, sLow, vLow), new HSV(hHigh, sHigh, vHigh));
             }
 
             List<Contour> allContours = source.getContours();
@@ -96,10 +104,11 @@ public class VisionThread extends Thread {
                             double avgWidth = Math.abs((c1.getWidth() + c2.getWidth()) / 2);
                             double pixelsPerInch = avgWidth / 2;
                             diff /= pixelsPerInch;
-                            //Log.d("Pixels: " + diff);
+                            //Log.d("diff: " + diff);
                             // > 5, < 10
                             if (diff > 4 && diff < 11) {
                                 if (!contoursWithinRange.contains(c1) || !contoursWithinRange.contains(c2)) {
+                                    //Log.d("Added pair");
                                     contoursWithinRange.add(c1);
                                     contoursWithinRange.add(c2);
                                 }

@@ -22,6 +22,7 @@ package com.explodingbacon.steambot;
 
 import com.explodingbacon.bcnlib.framework.Log;
 import com.explodingbacon.bcnlib.framework.RobotCore;
+import com.explodingbacon.bcnlib.vision.CameraSettings;
 import com.explodingbacon.bcnlib.vision.Vision;
 import com.explodingbacon.steambot.commands.*;
 import com.explodingbacon.steambot.subsystems.*;
@@ -44,10 +45,12 @@ public class Robot extends RobotCore {
     public static SendableChooser auto;
     public static SendableChooser baseLine;
     public static SendableChooser alliance;
+   public static SendableChooser whichAutoClass;
+    public static SendableChooser useTouchplate;
 
     private boolean rezeroed = false;
 
-    public static final boolean MAIN_ROBOT = false;
+    public static final boolean MAIN_ROBOT = true;
     public static final boolean VISION_TUNING = false;
 
     public Robot(IterativeRobot r) {
@@ -88,16 +91,28 @@ public class Robot extends RobotCore {
         alliance.addObject("Red", "red");
         SmartDashboard.putData("Which Alliance", alliance);
 
+        whichAutoClass = new SendableChooser();
+        whichAutoClass.initTable(NetworkTable.getTable("BaconTable"));
+        whichAutoClass.addDefault("Vision", "vision");
+        whichAutoClass.addObject("Dead Reckon (Center Only)", "dead");
+        whichAutoClass.addObject("Baseline Only", "baseline");
+        SmartDashboard.putData("Which Auto File", whichAutoClass);
+
+        useTouchplate = new SendableChooser();
+        useTouchplate.addDefault("Use Touchplate", "true");
+        useTouchplate.addObject("No Touchplate", "false");
+        SmartDashboard.putData("Touchplate Option", useTouchplate);
 
         //source.inRange(new HSV(40, 100, 50), new HSV(100, 255, 255));
         if (VISION_TUNING) {
-            SmartDashboard.putNumber("VisionHue_Low", 40);
-            SmartDashboard.putNumber("VisionSaturation_Low", 100);
-            SmartDashboard.putNumber("VisionValue_Low", 50);
+            VisionThread v = visionThread;
+            SmartDashboard.putNumber("VisionHue_Low", v.hLow);
+            SmartDashboard.putNumber("VisionSaturation_Low", v.sLow);
+            SmartDashboard.putNumber("VisionValue_Low", v.vLow);
 
-            SmartDashboard.putNumber("VisionHue_High", 100);
-            SmartDashboard.putNumber("VisionSaturation_High", 255);
-            SmartDashboard.putNumber("VisionValue_High", 255);
+            SmartDashboard.putNumber("VisionHue_High", v.hHigh);
+            SmartDashboard.putNumber("VisionSaturation_High", v.sHigh);
+            SmartDashboard.putNumber("VisionValue_High", v.vHigh);
         }
 
         Log.i("Air Pork " + (MAIN_ROBOT ? "One" : "Too") + " initialized.");
@@ -133,7 +148,22 @@ public class Robot extends RobotCore {
 
         Log.i("Autonomous init!");
 
-        OI.runCommand(new BetterAuto());
+        CameraSettings.setExposure(VisionThread.VISION_EXPOSURE);
+
+        String r = whichAutoClass.getSelected().toString();
+        Log.d("Auto selected: " + r);
+
+        if (r.equalsIgnoreCase("vision")) {
+            OI.runCommand(new BetterAuto());
+            Log.d("Doing vision auto.");
+        } else if (r.equalsIgnoreCase("dead")) {
+            OI.runCommand(new DeadreckonAuto());
+            Log.d("Doing dead-wreckoning auto.");
+        } else if (r.equalsIgnoreCase("baseline")) {
+            OI.runCommand(new BaselineAuto());
+            Log.d("Doing baseline auto.");
+        }
+
         //OI.runCommand(new StreamlineAuto());
         //OI.runCommand(new BaselineAuto());
     }
@@ -152,6 +182,8 @@ public class Robot extends RobotCore {
         OI.runCommand(new LiftCommand());
         if (MAIN_ROBOT) OI.runCommand(new ShooterCommand());
 
+        //CameraSettings.setExposure(9);
+
         Log.i("Teleop init!");
     }
 
@@ -163,6 +195,8 @@ public class Robot extends RobotCore {
     @Override
     public void disabledPeriodic() {
         super.disabledPeriodic();
+        //Log.d("gyro: " + drive.gyro.getForPID());
+
         //Log.d("Encoder: " + drive.strafeEncoder.get());
     }
 
