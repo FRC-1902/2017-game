@@ -117,10 +117,10 @@ public class BetterAuto extends Command {
             if (sideGear) {
                 if (rightSide) {
                     //drive.fieldCentricDirectionalAbsoluteAngleDrive(angle, findingTargetStrafeSpeed, angle);
-                    drive.fieldCentricAbsoluteAngleDrive(0.5, 0.5, angle);
+                    drive.fieldCentricAbsoluteAngleDrive(0.2, 0.5, angle);
                 } else {
                     //drive.fieldCentricDirectionalAbsoluteAngleDrive(360 - angle, findingTargetStrafeSpeed, angle);
-                    drive.fieldCentricAbsoluteAngleDrive(-0.5, 0.5, angle);
+                    drive.fieldCentricAbsoluteAngleDrive(-0.2, 0.5, angle);
                 }
             } else {
                 drive.fieldCentricAbsoluteAngleDrive(findingTargetStrafeSpeed * (!blue && shoot ? -1 : 1), 0, angle); //0.4 worked
@@ -147,7 +147,7 @@ public class BetterAuto extends Command {
                     if (!drive.strafePID.isEnabled()) drive.strafePID.enable();
                     Log.v("Approaching peg");
                     Integer oldPos = vision.getPositionWhenDetected();
-
+                    drive.strafePID.log();
                     Double errorInches = vision.getInchesFromTarget();
                     if (oldPos != null && errorInches != null) {
                         double target = oldPos - (drive.inchesToStrafeEncoder(errorInches));
@@ -191,6 +191,7 @@ public class BetterAuto extends Command {
 
             Robot.gear.setDeployed(false);
             drive.strafePID.disable();
+            /*
             if (sideGear && Robot.baseLine.getSelected().toString().equalsIgnoreCase("yes")) {
                 long start = System.currentTimeMillis();
                 while (System.currentTimeMillis() - start < 1000 && Robot.isAutonomous() && Robot.isEnabled()) {
@@ -198,6 +199,7 @@ public class BetterAuto extends Command {
                 }
                 //drive.fieldCentricAbsoluteAngleDrive(0, 0, 0);
             }
+            */
             while (Robot.isAutonomous() && Robot.isEnabled()) {
                 drive.fieldCentricAbsoluteAngleDrive(0, 0, 0);
             }

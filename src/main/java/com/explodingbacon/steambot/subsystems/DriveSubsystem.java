@@ -82,7 +82,7 @@ public class DriveSubsystem extends Subsystem {
             strafePID.setFinishedTolerance(200); //TODO: tune?
         } else {
         */
-        //        strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0006, 0.000020, 0.0015, 0.1, 1);
+        //       strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0012, 0.000020, 0.0015, 0.1, 1);
         strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0012, 0.000020, 0.0015, 0.1, 1);
         strafePID.setFinishedTolerance(200);
 

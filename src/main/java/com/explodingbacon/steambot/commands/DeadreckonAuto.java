@@ -37,7 +37,7 @@ public class DeadreckonAuto extends Command {
         try {
             Thread.sleep(500); //was 500
         } catch (Exception e) {}
-        /*if (!Robot.gear.getDeployed() && touched)*/ Robot.gear.setDeployed(true);
+        if (!Robot.gear.getDeployed() && touched) Robot.gear.setDeployed(true);
         try {
             Thread.sleep(250); //was 500
         } catch (Exception e) {}
