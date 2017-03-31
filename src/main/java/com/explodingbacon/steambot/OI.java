@@ -17,6 +17,7 @@ public class OI extends AbstractOI {
     public static Button liftSlow, liftFast;
     public static Button shoot, shooterRev;
     public static Button ringlightOff;
+    public static Button manipulatorRezero;
 
     public OI() {
         init();
@@ -46,6 +47,8 @@ public class OI extends AbstractOI {
         shooterRev = manipulator.a;
 
         ringlightOff = manipulator.x;
+
+        manipulatorRezero = manipulator.start;
     }
 
     /**

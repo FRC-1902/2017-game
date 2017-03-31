@@ -21,6 +21,9 @@ public class BetterAuto extends Command {
     private final double rightGearAngle = 360 - DriveCommand.pegAngle;
     private final double leftGearAngle = DriveCommand.pegAngle;
 
+    private final double blueShootAngle = 99999;
+    private final double redShootAngle = -999999;
+
     private final double findingTargetStrafeSpeed = 0.4;
     private final double backUpSpeed = -0.4;
 
@@ -39,11 +42,25 @@ public class BetterAuto extends Command {
         boolean movePosBecauseShoot = false;
 
         if (shoot) {
+            Robot.shooter.rev();
+            drive.strafePID.enable();
+            drive.strafePID.setTarget(drive.inchesToStrafeEncoder(12 * (blue ? 1 : -1)));
+
+            drive.strafePID.waitUntilDone();
+            drive.strafePID.disable();
+            drive.set(0, 0, 0);
+            drive.rotatePID.enable();
+            drive.rotatePID.setTarget(blue ? blueShootAngle : redShootAngle);
+            while (!drive.rotatePID.isDone()) {
+                drive.keepHeading(blue ? blueShootAngle : redShootAngle);
+            }
+
             long shootStart = System.currentTimeMillis();
             boolean reachedSpeed = false;
-            /*
+
+
             while (System.currentTimeMillis() - shootStart <= 7000 && Robot.isEnabled() && Robot.isEnabled()) {
-                Robot.shooter.rev();
+                //Robot.shooter.rev();
                 if (Robot.shooter.shootPID.isDone()) reachedSpeed = true;
                 if (reachedSpeed) {
                     Robot.shooter.justShoot();
@@ -51,7 +68,7 @@ public class BetterAuto extends Command {
             }
             Robot.shooter.stopRev();
             Robot.shooter.stopShoot();
-            */
+
 
             try {
                 Thread.sleep(1500);

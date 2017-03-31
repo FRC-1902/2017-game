@@ -22,6 +22,8 @@ public class DriveCommand extends Command {
 
     private boolean leftWasTrue = false, rightWasTrue = false;
 
+    private boolean manipWasTrue = false;
+
     @Override
     public void onInit() {
         left = Robot.drive.getLeftMotors();
@@ -95,10 +97,20 @@ public class DriveCommand extends Command {
             Robot.drive.xyzDrive(joyX, joyY, joyZ);
             //Log.d("JoyZ: " + joyZ);
         } else {
-            if (joyX2 == 0 && joyY2 == 0) {
-                Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
+            if (!OI.manipulatorRezero.get()) {
+                if (manipWasTrue) {
+                    Robot.drive.gyro.shiftZero(Robot.drive.gyro.getForPID()); //TODO: shiftZero or setZero?
+                }
+                if (joyX2 == 0 && joyY2 == 0) {
+                    Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
+                } else {
+                    Robot.drive.xyzAbsoluteAngleDrive(joyX2, joyY2, angle);
+                }
+                manipWasTrue = false;
             } else {
-                Robot.drive.xyzAbsoluteAngleDrive(joyX2, joyY2, angle);
+                double manipTurn = OI.manipulator.getX();
+                Robot.drive.tankDrive(manipTurn, -manipTurn);
+                manipWasTrue = true;
             }
         }
 
