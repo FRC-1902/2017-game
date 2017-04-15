@@ -29,8 +29,8 @@ public class Map {
     public static int GEAR_LIMIT = 4;
 
     //Solenoid
-    public static int GEAR_SOLENOID = Robot.MAIN_ROBOT ? 3 : 1;
+    public static int GEAR_SOLENOID = Robot.MAIN_ROBOT ? 3 : 0;
     public static int GEAR_SOLENOID_B = 2; //REAL ROBOT ONLY
-    public static int RING_LIGHT = Robot.MAIN_ROBOT ? 6 : 7;
+    public static int RING_LIGHT = Robot.MAIN_ROBOT ? 6 : 4;
 
 }

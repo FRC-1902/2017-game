@@ -6,6 +6,7 @@ import com.explodingbacon.steambot.Robot;
 import com.explodingbacon.steambot.VisionThread;
 
 import static com.explodingbacon.steambot.Robot.drive;
+import static com.explodingbacon.steambot.Robot.useTouchplate;
 
 
 public class DeadreckonAuto extends Command {
@@ -13,6 +14,7 @@ public class DeadreckonAuto extends Command {
     //these are stolen from betterauto
     private final double offset = -2.5;
     private final double backUpSpeed = -0.35;
+    boolean useTouchplate = Robot.useTouchplate.getSelected().toString().equalsIgnoreCase("true");
 
     @Override
     public void onInit() {
@@ -37,6 +39,7 @@ public class DeadreckonAuto extends Command {
         try {
             Thread.sleep(500); //was 500
         } catch (Exception e) {}
+        if (!useTouchplate) touched = true;
         if (!Robot.gear.getDeployed() && touched) Robot.gear.setDeployed(true);
         try {
             Thread.sleep(250); //was 500
@@ -47,6 +50,9 @@ public class DeadreckonAuto extends Command {
         while ((diff = Math.abs(millis - System.currentTimeMillis())) <= backupTime && Robot.isAutonomous() && Robot.isEnabled()) {
             Log.v("Backing up");
             drive.xyzAbsoluteAngleDrive(0, backUpSpeed, 0);
+        }
+        while (Robot.isAutonomous() && Robot.isEnabled()) {
+            drive.fieldCentricAbsoluteAngleDrive(0, 0, 0);
         }
     }
 

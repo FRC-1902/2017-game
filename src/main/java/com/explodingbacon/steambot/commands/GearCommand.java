@@ -21,13 +21,13 @@ public class GearCommand extends Command {
             if ((pressed && OI.allowPressureGear.get())) {
                 //Log.d("ON");
                 gearSubsystem.setDeployed(true);
-                OI.drive.rumble(0.2f, 0.2f);
+                OI.drive.rumble(0.5f, 0.5f);
                 try {
                     Thread.sleep(1000);
                 } catch (Exception e) {}
             } else {
                 if(OI.gear.get() || OI.manipGear.get()) {
-                    OI.drive.rumble(0.2f, 0.2f);
+                    OI.drive.rumble(0.5f, 0.5f);
                     gearSubsystem.setDeployed(true);
                 } else {
                     OI.drive.rumble(0, 0);

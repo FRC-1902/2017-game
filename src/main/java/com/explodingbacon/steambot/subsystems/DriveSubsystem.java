@@ -84,7 +84,7 @@ public class DriveSubsystem extends Subsystem {
         */
         //       strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0012, 0.000020, 0.0015, 0.1, 1);
         strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0012, 0.000020, 0.0015, 0.1, 1);
-        strafePID.setFinishedTolerance(45);
+        strafePID.setFinishedTolerance(90);
 
 
 
@@ -279,7 +279,7 @@ public class DriveSubsystem extends Subsystem {
      * @return The encoder clicks equivalent to the inches provided.
      */
     public double inchesToStrafeEncoder(double inches) {
-        return inches / (Math.PI * 4) * 360;
+        return inches / (Math.PI * 4) * (Robot.MAIN_ROBOT ? 360 : 1440);
     }
 
     public MotorGroup getLeftMotors() {

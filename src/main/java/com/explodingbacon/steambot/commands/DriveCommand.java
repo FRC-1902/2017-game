@@ -37,6 +37,7 @@ public class DriveCommand extends Command {
     public void onLoop() {
         if (OI.rezero.get()) {
             Robot.drive.gyro.rezero();
+            //angle = 0;
         }
 
         joyX = drive.getX();
@@ -73,20 +74,22 @@ public class DriveCommand extends Command {
 
         joyZ = Utils.deadzone(joyZ, deadzone);
 
+
         if(drive.x.get()) angle = 360 - feedAngle;
-        //if(drive.x.get()) angle = 360 - pegAngle;
         if(drive.y.get()) angle = 0;
         if(drive.b.get()) angle = feedAngle;
-        //if(drive.b.get()) angle = pegAngle;
         if(drive.a.get()) angle = 180;
+
 
         boolean left = drive.leftBumper.get();
         boolean right = drive.rightBumper.get();
 
         if (left && !leftWasTrue) {
-            angle -= feedAngle;
+            angle -= 5;
+            //angle -= feedAngle;
         } else if (right && !rightWasTrue) {
-            angle += feedAngle;
+            angle += 5;
+            //angle += feedAngle;
         }
 
         leftWasTrue = left;
@@ -100,7 +103,10 @@ public class DriveCommand extends Command {
             if (!OI.manipulatorRezero.get()) {
                 if (manipWasTrue) {
                     Robot.drive.gyro.shiftZero(Robot.drive.gyro.getForPID()); //TODO: shiftZero or setZero?
+                    angle = 0;
                 }
+                //Robot.drive.fieldCentricDrive(joyX, -joyY, -joyX2);
+
                 if (joyX2 == 0 && joyY2 == 0) {
                     Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
                 } else {
@@ -108,8 +114,9 @@ public class DriveCommand extends Command {
                 }
                 manipWasTrue = false;
             } else {
-                double manipTurn = OI.manipulator.getX();
-                Robot.drive.tankDrive(manipTurn, -manipTurn);
+                double manipTurn = Utils.deadzone(-OI.manipulator.getX(), deadzone);
+                manipTurn *= .5;
+                Robot.drive.tankDrive(manipTurn, manipTurn);
                 manipWasTrue = true;
             }
         }

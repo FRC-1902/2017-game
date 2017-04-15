@@ -23,7 +23,7 @@ public class VisionThread extends Thread {
     private double errorInPixels = 0;
     private Double errorInInches = null;
 
-    private final double TARGET_POS_OFFSET = Robot.MAIN_ROBOT ? 0 : 33;
+    private final double TARGET_POS_OFFSET = Robot.MAIN_ROBOT ? 0 : 33; //0 : 33
     private double gearPixelError;
 
     //source.inRange(new HSV(60, 150, 50), new HSV(110, 255, 255));

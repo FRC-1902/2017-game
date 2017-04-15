@@ -47,10 +47,12 @@ public class Robot extends RobotCore {
     public static SendableChooser alliance;
    public static SendableChooser whichAutoClass;
     public static SendableChooser useTouchplate;
+    public static SendableChooser shootInAuto;
+    public static SendableChooser spamDrive;
 
     private boolean rezeroed = false;
 
-    public static final boolean MAIN_ROBOT = true;
+    public static final boolean MAIN_ROBOT = false;
     public static final boolean VISION_TUNING = false;
 
     public Robot(IterativeRobot r) {
@@ -64,7 +66,7 @@ public class Robot extends RobotCore {
         vision = new VisionSubsystem();
         gear = new GearSubsystem();
         lift = new LiftSubsystem();
-        if (MAIN_ROBOT) shooter = new ShooterSubsystem();
+        shooter = new ShooterSubsystem();
 
         if (Vision.isInit()) visionThread.start();
 
@@ -102,6 +104,17 @@ public class Robot extends RobotCore {
         useTouchplate.addDefault("Use Touchplate", "true");
         useTouchplate.addObject("No Touchplate", "false");
         SmartDashboard.putData("Touchplate Option", useTouchplate);
+
+        shootInAuto = new SendableChooser();
+        shootInAuto.addDefault("Shoot Before Gear", "shoot");
+        shootInAuto.addObject("No Shoot", "no");
+        SmartDashboard.putData("Shoot Options", shootInAuto);
+
+        spamDrive = new SendableChooser();
+        spamDrive.addDefault("SPAM Drive - Left", "spam_left");
+        spamDrive.addObject("SPAM Drive - Right", "spam_right");
+        spamDrive.addObject("NO SPAM DRIVE", "no");
+        SmartDashboard.putData("SPAM Drive Chooser", spamDrive);
 
         //source.inRange(new HSV(40, 100, 50), new HSV(100, 255, 255));
         if (VISION_TUNING) {
@@ -153,13 +166,13 @@ public class Robot extends RobotCore {
         String r = whichAutoClass.getSelected().toString();
         Log.d("Auto selected: " + r);
 
-        if (r.equalsIgnoreCase("vision")) {
+        if (r.equalsIgnoreCase("vision") || r.equalsIgnoreCase("dead")) {
             OI.runCommand(new BetterAuto());
-            Log.d("Doing vision auto.");
-        } else if (r.equalsIgnoreCase("dead")) {
+            Log.a("Doing standard auto.");
+        }/* else if (r.equalsIgnoreCase("dead")) {
             OI.runCommand(new DeadreckonAuto());
             Log.d("Doing dead-wreckoning auto.");
-        } else if (r.equalsIgnoreCase("baseline")) {
+        }*/ else if (r.equalsIgnoreCase("baseline")) {
             OI.runCommand(new BaselineAuto());
             Log.d("Doing baseline auto.");
         }
@@ -180,7 +193,7 @@ public class Robot extends RobotCore {
         OI.runCommand(new DriveCommand());
         OI.runCommand(new GearCommand());
         OI.runCommand(new LiftCommand());
-        if (MAIN_ROBOT) OI.runCommand(new ShooterCommand());
+        OI.runCommand(new ShooterCommand());
 
         //CameraSettings.setExposure(9);
 
