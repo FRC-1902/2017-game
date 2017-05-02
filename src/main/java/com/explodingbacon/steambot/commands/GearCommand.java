@@ -4,6 +4,7 @@ import com.explodingbacon.bcnlib.framework.Command;
 import com.explodingbacon.steambot.OI;
 import com.explodingbacon.steambot.Robot;
 import com.explodingbacon.steambot.subsystems.GearSubsystem;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class GearCommand extends Command {
     private GearSubsystem gearSubsystem;
@@ -16,6 +17,7 @@ public class GearCommand extends Command {
     @Override
     public void onLoop() {
         boolean pressed = gearSubsystem.getTouchSensor();
+        SmartDashboard.putBoolean("Touchplate Pressed", pressed);
         //if (Robot.isEnabled()) Log.d("Pressed: " + pressed);
         if (Robot.isTeleop()) {
             if ((pressed && OI.allowPressureGear.get())) {

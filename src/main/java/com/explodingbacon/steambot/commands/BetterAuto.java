@@ -189,11 +189,27 @@ public class BetterAuto extends Command {
 
         while (!(vision.canSeeTarget() || deadReckon) && Robot.isEnabled() && Robot.isAutonomous()) {
             if (sideGear) {
-                if (rightSide) {
-                    drive.fieldCentricAbsoluteAngleDrive(0.2, 0.5, angle);
-                } else {
-                    drive.fieldCentricAbsoluteAngleDrive(-0.2, 0.5, angle);
+                drive.strafePID.enable();
+                drive.strafePID.setTarget(drive.inchesToStrafeEncoder((5 * 12) * (rightSide ? 1 : -1)));
+                while (!drive.strafePID.isDone() && Robot.isAutonomous() && Robot.isEnabled()) {
+                    drive.fieldCentricDrive(0, 0, 0);
+                    try {
+                        Thread.sleep(5);
+                    } catch (Exception e) {
+                    }
                 }
+                drive.strafePID.disable();
+                drive.rotatePID.enable();
+                drive.rotatePID.setTarget(angle);
+                while (!drive.rotatePID.isDone() && Robot.isAutonomous() && Robot.isEnabled()) {
+                    drive.keepHeading(angle);
+                    try {
+                        Thread.sleep(5);
+                    } catch (Exception e) {
+                    }
+                }
+                drive.rotatePID.disable();
+                drive.set(0, 0, 0);
             } else {
                 drive.fieldCentricAbsoluteAngleDrive(findingTargetStrafeSpeed, 0, angle); //0.4 worked
             }
@@ -233,8 +249,12 @@ public class BetterAuto extends Command {
                         Double errorInches = vision.getInchesFromTarget();
                         if (oldPos != null && errorInches != null) {
                             double target = oldPos - (drive.inchesToStrafeEncoder(errorInches));
-                            //Log.d("Target: " + target);
-                            target /= Math.abs(Math.cos(Math.toRadians(drive.rotatePID.getCurrentError()))); //formerly angle - drive.gyro.getForPID()
+
+                            //TODO: IF VISION IS BEING WEIRD REMOVE THE - OFFSET IN HERE
+                            double angleError = drive.rotatePID.getCurrentError();
+                            //if (angleError < 0) angleError = 360 + angleError;
+
+                            target /= Math.abs(Math.cos(Math.toRadians(angleError))); //formerly angle - drive.gyro.getForPID()
                             //if (!sideGear) target += drive.inchesToStrafeEncoder(1.5);
                             drive.strafePID.setTarget(target);
                         } else {
@@ -243,7 +263,7 @@ public class BetterAuto extends Command {
 
                         double speed;
                         int accelTime = sideGear ? 1400 : 1400; //may need to be lower now
-                        speed = timeElapsed >= accelTime ? 0.45 : 0.6; //.35 formerly
+                        speed = timeElapsed >= accelTime ? 0.4 : 0.6; //.45 formerly
                         if (timeElapsed < 1000) speed = 0; //Let PID adjust for 1 second before moving
 
                         if (speed == 0) {
@@ -291,15 +311,16 @@ public class BetterAuto extends Command {
 
                 millis = System.currentTimeMillis();
                 int backupTime = sideGear ? 1500 : 1200;
+                if (sideGear && spamDrive) backupTime = 2500;
                 Log.a("Backing up from peg...");
                 long elapsed;
                 while ((elapsed = Math.abs(millis - System.currentTimeMillis())) <= backupTime && Robot.isAutonomous() && Robot.isEnabled()) {
                     drive.xyzAbsoluteAngleDrive(0, backUpSpeed, angle);
                     if (elapsed < 250) {
-                        Robot.gear.setDeployed(true);
+                        if (touched) Robot.gear.setDeployed(true);
                     }
                 }
-                Robot.gear.setDeployed(false);
+                if (touched) Robot.gear.setDeployed(false);
             }
             if (spamDrive) {
                 if (!sideGear) {

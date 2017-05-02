@@ -97,7 +97,7 @@ public class DriveCommand extends Command {
 
         if (!Robot.drive.gyro.isPresent()) {
             Log.w("NO GYRO DETECTED, IN ROBOT CENTRIC DRIVE MODE");
-            Robot.drive.xyzDrive(joyX, joyY, joyZ);
+            Robot.drive.xyzDrive(joyX, joyY, joyX2 * -1.25);
             //Log.d("JoyZ: " + joyZ);
         } else {
             if (!OI.manipulatorRezero.get()) {

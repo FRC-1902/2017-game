@@ -52,7 +52,7 @@ public class Robot extends RobotCore {
 
     private boolean rezeroed = false;
 
-    public static final boolean MAIN_ROBOT = false;
+    public static final boolean MAIN_ROBOT = true;
     public static final boolean VISION_TUNING = false;
 
     public Robot(IterativeRobot r) {
@@ -210,7 +210,7 @@ public class Robot extends RobotCore {
         super.disabledPeriodic();
         //Log.d("gyro: " + drive.gyro.getForPID());
 
-        //Log.d("Encoder: " + drive.strafeEncoder.get());
+        //Log.d("Encoder: " + drive.strafeEncoder.getForPID());
     }
 
     @Override
