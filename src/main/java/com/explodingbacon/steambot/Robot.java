@@ -25,6 +25,7 @@ import com.explodingbacon.bcnlib.framework.RobotCore;
 import com.explodingbacon.bcnlib.vision.CameraSettings;
 import com.explodingbacon.bcnlib.vision.Vision;
 import com.explodingbacon.steambot.commands.*;
+import com.explodingbacon.steambot.positioning.RobotStateGenerator;
 import com.explodingbacon.steambot.subsystems.*;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
@@ -43,12 +44,13 @@ public class Robot extends RobotCore {
     public static VisionThread visionThread = new VisionThread();
     public static PositionLogThread positionLog = new PositionLogThread();
     public static SendableChooser auto;
-    public static SendableChooser baseLine;
     public static SendableChooser alliance;
-   public static SendableChooser whichAutoClass;
+    public static SendableChooser whichAutoClass;
     public static SendableChooser useTouchplate;
     public static SendableChooser shootInAuto;
     public static SendableChooser spamDrive;
+
+    private static RobotStateGenerator generator;
 
     private boolean rezeroed = false;
 
@@ -70,6 +72,7 @@ public class Robot extends RobotCore {
 
         if (Vision.isInit()) visionThread.start();
 
+        generator.start();
         positionLog.start();
 
         SmartDashboard.putNumber("Shoot Speed", 88000);
@@ -80,12 +83,6 @@ public class Robot extends RobotCore {
         auto.addObject("Left", "left");
         auto.addObject("Right", "right");
         SmartDashboard.putData("Autonomous Picker", auto);
-
-        baseLine = new SendableChooser();
-        baseLine.initTable(NetworkTable.getTable("BaconTable"));
-        baseLine.addDefault("Yes", "yes");
-        baseLine.addObject("No", "no");
-        SmartDashboard.putData("Do Baseline after Auto", baseLine);
 
         alliance = new SendableChooser();
         alliance.initTable(NetworkTable.getTable("BaconTable"));
