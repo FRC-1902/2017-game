@@ -367,3 +367,14 @@ public class BetterAuto extends Command {
         return false;
     }
 }
+
+/**
+ * List<Waypoint> second_path = new ArrayList<>();
+ second_path.add(new Waypoint(new Translation2d(215, 18), 120.0));
+ second_path.add(new Waypoint(new Translation2d(150, 18), 60.0));
+ second_path.add(new Waypoint(new Translation2d(70, 18), 84.0));
+ second_path.add(new Waypoint(new Translation2d(56, 18), 84.0));
+ second_path.add(new Waypoint(new Translation2d(56, 24), 84.0));
+ second_path.add(new Waypoint(new Translation2d(18, 26), 84.0));
+ Path p = new Path(second_path);
+ */
