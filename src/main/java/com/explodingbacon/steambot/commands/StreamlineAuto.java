@@ -132,7 +132,7 @@ public class StreamlineAuto extends Command {
 
                     Double errorInches = vision.getInchesFromTarget();
                     if (oldPos != null && errorInches != null) {
-                        double target = oldPos - (drive.inchesToStrafeEncoder(errorInches));
+                        double target = oldPos - (drive.inchesToClicks(errorInches));
                         //Log.d("Target: " + target);
                         target /= Math.abs(Math.cos(Math.toRadians(drive.rotatePID.getCurrentError()))); //formerly angle - drive.gyro.getForPID()
                         drive.strafePID.setTarget(target);

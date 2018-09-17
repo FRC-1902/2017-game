@@ -10,9 +10,16 @@ import com.explodingbacon.bcnlib.sensors.AbstractEncoder;
 import com.explodingbacon.bcnlib.sensors.BNOGyro;
 import com.explodingbacon.bcnlib.sensors.Encoder;
 import com.explodingbacon.bcnlib.utils.Utils;
+import com.explodingbacon.steambot.Constants;
 import com.explodingbacon.steambot.Map;
 import com.explodingbacon.steambot.Robot;
+import com.explodingbacon.steambot.positioning.Kinematics;
+import com.explodingbacon.steambot.positioning.RobotState;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.VictorSP;
+import team254.utils.AdaptivePurePursuitController;
+import team254.utils.Path;
+import team254.utils.RigidTransform2d;
 
 import java.util.List;
 
@@ -21,8 +28,7 @@ public class DriveSubsystem extends Subsystem {
     private Double GLOBAL_MIN = 0.2;
 
     private MotorGroup leftMotors, rightMotors, strafeMotors;
-    //private Motor frontLeft, backLeft, frontRight, backRight;
-    public Encoder /*frontLeftEncoder, backLeftEncoder, frontRightEncoder, backRightEncoder,*/ strafeEncoder;
+    public Encoder leftEncoder, rightEncoder, strafeEncoder;
 
     public BNOGyro gyro;
 
@@ -40,6 +46,8 @@ public class DriveSubsystem extends Subsystem {
     private final Double driveKD = 0d; //TODO: This
     */
 
+    private AdaptivePurePursuitController pathFollower = null;
+
     public DriveSubsystem() {
         leftMotors = new MotorGroup(VictorSP.class, Map.LEFT_DRIVE_1, Map.LEFT_DRIVE_2);
         rightMotors = new MotorGroup(VictorSP.class, Map.RIGHT_DRIVE_1, Map.RIGHT_DRIVE_2);
@@ -55,13 +63,6 @@ public class DriveSubsystem extends Subsystem {
             strafeMotors.setInverts(false, false);
         }
 
-        /*
-        frontLeft = leftMotors.getMotors().get(0);
-        backLeft = leftMotors.getMotors().get(1);
-        frontRight = rightMotors.getMotors().get(0);
-        backRight = rightMotors.getMotors().get(1);
-        */
-
         gyro = new BNOGyro(true);
 
         watchdogThread = new Thread(watchdogRunnable);
@@ -69,27 +70,18 @@ public class DriveSubsystem extends Subsystem {
         rotatePidOutput = new FakeMotor();
         strafePidOutput = new FakeMotor();
 
+        //TODO: init left and right encoders once they exist
+        leftEncoder = null;
+        rightEncoder = null;
+
         strafeEncoder = new Encoder(Map.STRAFE_ENC_A, Map.STRAFE_ENC_B);
         strafeEncoder.setPIDMode(AbstractEncoder.PIDMode.POSITION);
         strafeEncoder.setReversed(false);
 
-        //0.00048, 0.000012, 0.004, 0.05, 1);
-        //0.00088
-
-        //TODO: figure out if this is right
-        /*
-        if(Robot.MAIN_ROBOT) {
-            strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.008, 0.000012, 0.001, 0.1, 1);
-            strafePID.setFinishedTolerance(200); //TODO: tune?
-        } else {
-        */
-        //       strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0012, 0.000020, 0.0015, 0.1, 1);
         strafePID = new PIDController(strafePidOutput, strafeEncoder, 0.0012, 0.000020, 0.0015, 0.1, 1);
         strafePID.setFinishedTolerance(90);
 
 
-
-        //        rotatePID = new PIDController(rotatePidOutput, gyro, 0.018, 0.0008, 0.09, 0.15, 1)
         rotatePID = new PIDController(rotatePidOutput, gyro, 0.01, 0.0008 * 2, 0.09 * 1.5, 0.15, 1)
                 .setRotational(true); //TODO: Tune
 
@@ -278,15 +270,86 @@ public class DriveSubsystem extends Subsystem {
         rightMotors.setPower(rotatePidOutput.getPower());
     }
 
+    public void followPath(Path path, boolean reversed) {
+        //if not already in pathfollowing mode
+            //configureTalonsForSpeedControl();
+            //reset velocity PIDs
+        pathFollower = new AdaptivePurePursuitController(Constants.pathFollowLookahead,
+                Constants.pathFollowMaxAccel, Constants.kLooperDt, path, reversed, 0.25);
+        updatePathFollower();
+    }
+
+    //TODO: where does this get called from?
+    public void updatePathFollower() {
+        if (pathFollower != null) {
+            RigidTransform2d robot_pose = RobotState.getInstance().getLatestFieldToVehicle().getValue();
+            RigidTransform2d.Delta command = pathFollower.update(robot_pose, Timer.getFPGATimestamp());
+            Kinematics.DriveVelocity setpoint = Kinematics.inverseKinematics(command);
+
+            // Scale the command to respect the max velocity limits
+            double max_vel = 0.0;
+            max_vel = Math.max(max_vel, Math.abs(setpoint.left));
+            max_vel = Math.max(max_vel, Math.abs(setpoint.right));
+            if (max_vel > Constants.pathFollowMaxVel) {
+                double scaling = Constants.pathFollowMaxVel / max_vel;
+                setpoint = new Kinematics.DriveVelocity(setpoint.left * scaling, setpoint.right * scaling);
+            }
+            //TODO: velocity PID for left and right wheels receive the setpoint.left and setpoint.right values
+        }
+    }
+
     /**
      * Converts inches to strafe encoder clicks.
      *
      * @param inches The inches to be converted.
      * @return The encoder clicks equivalent to the inches provided.
      */
-    public double inchesToStrafeEncoder(double inches) {
-        return inches / (Math.PI * 4) * (Robot.MAIN_ROBOT ? 360 : 1440);
+    public static double inchesToClicks(double inches) {
+        return inchesToRotations(inches) * (Robot.MAIN_ROBOT ? 360 : 1440);
     }
+
+    public static double inchesPerSecondToRpm(double inches_per_second) {
+        return inchesToRotations(inches_per_second) * 60;
+    }
+
+    public static double inchesToRotations(double inches) {
+        return inches / (Math.PI * Constants.wheelDiameterInches);
+    }
+
+    public static double clicksToInches(double clicks) {
+        return rotationsToInches(clicks / (Robot.MAIN_ROBOT ? 360 : 1440));
+    }
+
+    private static double rpmToInchesPerSecond(double rpm) {
+        return rotationsToInches(rpm) / 60;
+    }
+
+    public static double rotationsToInches(double rotations) {
+        return rotations * (Math.PI * Constants.wheelDiameterInches);
+    }
+
+    public double getLeftDistanceInches() {
+        if (leftEncoder != null) return clicksToInches(leftEncoder.get());
+        return 0;
+    }
+
+    public double getRightDistanceInches() {
+        if (rightEncoder != null) return clicksToInches(rightEncoder.get());
+        return 0;
+    }
+
+    //TODO: find out if encoder rates are in clicks per second like I'm assuming
+
+    public double getLeftVelocityInchesPerSec() {
+        if (leftEncoder != null) return clicksToInches(leftEncoder.getRate());
+        return 0;
+    }
+
+    public double getRightVelocityInchesPerSec() {
+        if (rightEncoder != null) return clicksToInches(rightEncoder.getRate());
+        return 0;
+    }
+
 
     public MotorGroup getLeftMotors() {
         return leftMotors;

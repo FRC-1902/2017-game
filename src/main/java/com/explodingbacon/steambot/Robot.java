@@ -25,6 +25,7 @@ import com.explodingbacon.bcnlib.framework.RobotCore;
 import com.explodingbacon.bcnlib.vision.CameraSettings;
 import com.explodingbacon.bcnlib.vision.Vision;
 import com.explodingbacon.steambot.commands.*;
+import com.explodingbacon.steambot.positioning.RobotStateGenerator;
 import com.explodingbacon.steambot.subsystems.*;
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -48,6 +49,8 @@ public class Robot extends RobotCore {
     public static SendableChooser shootInAuto;
     public static SendableChooser spamDrive;
 
+    private static RobotStateGenerator generator;
+
     private boolean rezeroed = false;
 
     public static final boolean MAIN_ROBOT = true;
@@ -68,6 +71,7 @@ public class Robot extends RobotCore {
 
         if (Vision.isInit()) visionThread.start();
 
+        generator.start();
         positionLog.start();
 
         SmartDashboard.putNumber("Shoot Speed", ShooterSubsystem.SHOOTER_RPM);
