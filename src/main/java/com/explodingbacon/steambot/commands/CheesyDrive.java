@@ -1,27 +1,25 @@
 package com.explodingbacon.steambot.commands;
 
-import team254.utils.DriveSignal;
-import team254.utils.CheesyUtil;
+import com.explodingbacon.bcnlib.utils.Utils;
+import com.explodingbacon.steambot.OI;
 
-/**
- * Helper class to implement "Cheesy Drive". "Cheesy Drive" simply means that
- * the "turning" stick controls the curvature of the robot's path rather than
- * its rate of heading change. This helps make the robot more controllable at
- * high speeds. Also handles the robot's quick turn functionality - "quick turn"
- * overrides constant-curvature turning for turn-in-place maneuvers.
- */
 public class CheesyDrive {
 
     double mQuickStopAccumulator;
-    private DriveSignal mSignal = new DriveSignal(0, 0);
 
     //Tuning
     public static final double kThrottleDeadband = 0.02;
     private static final double kWheelDeadband = 0.02;
     private static final double kTurnSensitivity = 1.0;
 
-    //Partially-supported theory: if isQuickTurn is true, CheesyDrive behaves identically (or at least closer to) standard arcade
-    public DriveSignal cheesyDrive(double throttle, double wheel, boolean isQuickTurn) {
+    public DriveOrder calculate(double throttle, double wheel) {
+        //double throttle = g.getY();
+        //double wheel = g.getX2();
+
+        throttle = (float) Math.pow(throttle, 4) * Utils.sign(throttle);
+        wheel = (float) Math.pow(wheel, 4) * Utils.sign(wheel);
+
+        boolean isQuickTurn = throttle < 0.1;
 
         wheel = handleDeadband(wheel, kWheelDeadband);
         throttle = handleDeadband(throttle, kThrottleDeadband);
@@ -30,22 +28,24 @@ public class CheesyDrive {
 
         double angularPower;
 
+        if (!OI.drive.isLeftTriggerPressed()) wheel *= .75;
+
         if (isQuickTurn) {
             if (Math.abs(throttle) < 0.2) {
-                double alpha = 0.1;
-                mQuickStopAccumulator = (1 - alpha) * mQuickStopAccumulator + alpha * CheesyUtil.limit(wheel, 1.0) * 2;
+                float alpha = 0.1f;
+                mQuickStopAccumulator = (1f - alpha) * mQuickStopAccumulator + alpha * Utils.cap(wheel, 1.0f) * 2;
             }
-            overPower = 1.0;
+            overPower = 1.0f;
             angularPower = wheel;
         } else {
-            overPower = 0.0;
+            overPower = 0.0f;
             angularPower = Math.abs(throttle) * wheel * kTurnSensitivity - mQuickStopAccumulator;
             if (mQuickStopAccumulator > 1) {
                 mQuickStopAccumulator -= 1;
             } else if (mQuickStopAccumulator < -1) {
                 mQuickStopAccumulator += 1;
             } else {
-                mQuickStopAccumulator = 0.0;
+                mQuickStopAccumulator = 0.0f;
             }
         }
 
@@ -53,23 +53,21 @@ public class CheesyDrive {
         double leftPwm = throttle + angularPower;
         if (leftPwm > 1.0) {
             rightPwm -= overPower * (leftPwm - 1.0);
-            leftPwm = 1.0;
+            leftPwm = 1.0f;
         } else if (rightPwm > 1.0) {
             leftPwm -= overPower * (rightPwm - 1.0);
-            rightPwm = 1.0;
+            rightPwm = 1.0f;
         } else if (leftPwm < -1.0) {
             rightPwm += overPower * (-1.0 - leftPwm);
-            leftPwm = -1.0;
+            leftPwm = -1.0f;
         } else if (rightPwm < -1.0) {
             leftPwm += overPower * (-1.0 - rightPwm);
-            rightPwm = -1.0;
+            rightPwm = -1.0f;
         }
-        mSignal.rightMotor = rightPwm;
-        mSignal.leftMotor = leftPwm;
-        return mSignal;
+        return new DriveOrder(leftPwm, rightPwm);
     }
 
     public double handleDeadband(double val, double deadband) {
-        return (Math.abs(val) > Math.abs(deadband)) ? val : 0.0;
+        return (Math.abs(val) > Math.abs(deadband)) ? val : 0.0f;
     }
 }

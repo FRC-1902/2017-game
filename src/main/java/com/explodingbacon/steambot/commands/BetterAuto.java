@@ -6,6 +6,8 @@ import com.explodingbacon.steambot.Robot;
 import com.explodingbacon.steambot.VisionThread;
 import com.explodingbacon.steambot.subsystems.DriveSubsystem;
 
+import static com.explodingbacon.steambot.Robot.drive;
+
 public class BetterAuto extends Command {
 
     DriveSubsystem drive;
@@ -53,7 +55,7 @@ public class BetterAuto extends Command {
         if (shoot) {
             Robot.shooter.rev();
             drive.strafePID.enable();
-            drive.strafePID.setTarget(drive.inchesToClicks(12 * (blue ? -1 : 1)));
+            drive.strafePID.setTarget(drive.inchesToStrafeEncoder(12 * (blue ? -1 : 1)));
             boolean timedOut = false;
             long pidStart = System.currentTimeMillis();
             while (!drive.strafePID.isDone()) {
@@ -188,7 +190,7 @@ public class BetterAuto extends Command {
         while (!(vision.canSeeTarget() || deadReckon) && Robot.isEnabled() && Robot.isAutonomous()) {
             if (sideGear) {
                 drive.strafePID.enable();
-                drive.strafePID.setTarget(drive.inchesToClicks((5 * 12) * (rightSide ? 1 : -1)));
+                drive.strafePID.setTarget(drive.inchesToStrafeEncoder((5 * 12) * (rightSide ? 1 : -1)));
                 while (!drive.strafePID.isDone() && Robot.isAutonomous() && Robot.isEnabled()) {
                     drive.fieldCentricDrive(0, 0, 0);
                     try {
@@ -246,14 +248,14 @@ public class BetterAuto extends Command {
                         //drive.strafePID.log();
                         Double errorInches = vision.getInchesFromTarget();
                         if (oldPos != null && errorInches != null) {
-                            double target = oldPos - (drive.inchesToClicks(errorInches));
+                            double target = oldPos - (drive.inchesToStrafeEncoder(errorInches));
 
                             //TODO: IF VISION IS BEING WEIRD REMOVE THE - OFFSET IN HERE
                             double angleError = drive.rotatePID.getCurrentError();
                             //if (angleError < 0) angleError = 360 + angleError;
 
                             target /= Math.abs(Math.cos(Math.toRadians(angleError))); //formerly angle - drive.gyro.getForPID()
-                            //if (!sideGear) target += drive.inchesToClicks(1.5);
+                            //if (!sideGear) target += drive.inchesToStrafeEncoder(1.5);
                             drive.strafePID.setTarget(target);
                         } else {
                             //Log.w("Got null data for vision");
@@ -322,7 +324,7 @@ public class BetterAuto extends Command {
             }
             if (spamDrive) {
                 if (!sideGear) {
-                    double target = drive.inchesToClicks((7 * 12) * (spamDriveLeft ? -1 : 1));
+                    double target = drive.inchesToStrafeEncoder((7 * 12) * (spamDriveLeft ? -1 : 1));
                     target += drive.strafeEncoder.get();
                     Log.e("target: " + target);
                     drive.strafePID.setTarget(target);
@@ -367,14 +369,3 @@ public class BetterAuto extends Command {
         return false;
     }
 }
-
-/**
- * List<Waypoint> second_path = new ArrayList<>();
- second_path.add(new Waypoint(new Translation2d(215, 18), 120.0));
- second_path.add(new Waypoint(new Translation2d(150, 18), 60.0));
- second_path.add(new Waypoint(new Translation2d(70, 18), 84.0));
- second_path.add(new Waypoint(new Translation2d(56, 18), 84.0));
- second_path.add(new Waypoint(new Translation2d(56, 24), 84.0));
- second_path.add(new Waypoint(new Translation2d(18, 26), 84.0));
- Path p = new Path(second_path);
- */
