@@ -10,6 +10,8 @@ import com.explodingbacon.steambot.Robot;
 
 public class DriveCommand extends Command {
 
+    private CheesyDrive cheese;
+
     private final double deadzone = 0.1;
 
     private double joyX, joyY, joyX2, joyY2, joyZ;
@@ -31,6 +33,8 @@ public class DriveCommand extends Command {
         strafe = Robot.drive.getStrafeMotors();
 
         drive = OI.drive;
+
+        cheese = new CheesyDrive();
     }
 
     @Override
@@ -46,35 +50,23 @@ public class DriveCommand extends Command {
         joyX2 = drive.getX2();
         joyY2 = -drive.getY2();
 
-        joyX2 *= .75;
+        joyX2 *= Robot.MAIN_ROBOT ? 1 : .75;
         joyY2 *= 1;
 
-        //Log.d("joyZ: "+ joyZ);
-
         joyX = Math.pow(joyX, 2) * Utils.sign(joyX);
-        
         joyY = Math.pow(joyY, 2) * Utils.sign(joyY);
-
         joyX2 = Math.pow(joyX2, 2) * Utils.sign(joyX2);
         joyY2 = Math.pow(joyY2, 2) * Utils.sign(joyY2);
-
         joyZ = Math.pow(joyZ, 2) * Utils.sign(joyZ);
-
-        /*
-        joyX = Math.pow(drive.getX(), 3);
-        joyY = Math.pow(drive.getY(), 3);
-        joyZ = Math.pow(-turn.getX(), 3); //drive.getZ();
-        */
 
         joyX = Utils.deadzone(joyX, deadzone);
         joyY = Utils.deadzone(joyY, deadzone);
-
         joyX2 = Utils.deadzone(joyX2, deadzone);
         joyY2 = Utils.deadzone(joyY2, deadzone);
-
         joyZ = Utils.deadzone(joyZ, deadzone);
 
 
+        //real field mode
         if(drive.x.get()) angle = 360 - feedAngle;
         if(drive.y.get()) angle = 0;
         if(drive.b.get()) angle = feedAngle;
@@ -84,40 +76,64 @@ public class DriveCommand extends Command {
         boolean left = drive.leftBumper.get();
         boolean right = drive.rightBumper.get();
 
+        //angle +- 5
         if (left && !leftWasTrue) {
-            angle -= 5;
+            angle -= 15;
             //angle -= feedAngle;
         } else if (right && !rightWasTrue) {
-            angle += 5;
+            angle += 15;
             //angle += feedAngle;
         }
 
         leftWasTrue = left;
         rightWasTrue = right;
 
-        if (!Robot.drive.gyro.isPresent()) {
-            Log.w("NO GYRO DETECTED, IN ROBOT CENTRIC DRIVE MODE");
-            Robot.drive.xyzDrive(joyX, joyY, joyX2 * -1.25);
-            //Log.d("JoyZ: " + joyZ);
-        } else {
-            if (!OI.manipulatorRezero.get()) {
-                if (manipWasTrue) {
-                    Robot.drive.gyro.shiftZero(Robot.drive.gyro.getForPID()); //TODO: shiftZero or setZero?
-                    angle = 0;
-                }
-                //Robot.drive.fieldCentricDrive(joyX, -joyY, -joyX2);
-
-                if (joyX2 == 0 && joyY2 == 0) {
-                    Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
-                } else {
-                    Robot.drive.xyzAbsoluteAngleDrive(joyX2, joyY2, angle);
-                }
-                manipWasTrue = false;
+        if (Robot.MAIN_ROBOT) {
+            double throttle = -OI.drive.getX2();
+            double wheel = OI.drive.getY();
+            throttle = Utils.deadzone(throttle, 0.1);
+            wheel = Utils.deadzone(wheel, 0.1);
+            if (OI.drive.isLeftTriggerPressed()) {
+                throttle *= .75;
+                wheel *= .75;
             } else {
-                double manipTurn = Utils.deadzone(-OI.manipulator.getX(), deadzone);
-                manipTurn *= .5;
-                Robot.drive.tankDrive(manipTurn, manipTurn);
-                manipWasTrue = true;
+                throttle *= .875;
+            }
+            throttle = Math.pow(throttle, 3);// * Utils.sign(throttle);
+            wheel = Math.pow(wheel, 3);// * Utils.sign(wheel);
+            if (!OI.drive.isLeftTriggerPressed()) {
+                wheel *= .75;
+            }
+
+            DriveOrder o = new DriveOrder(throttle + wheel, throttle - wheel);
+
+            //DriveOrder o = cheese.calculate(throttle, wheel);
+            Robot.drive.tankDrive(o.left, o.right);
+        } else {
+            if (!Robot.drive.gyro.isPresent()) {
+                Log.w("NO GYRO DETECTED, IN ROBOT CENTRIC DRIVE MODE");
+                Robot.drive.xyzDrive(joyX, joyY, joyX2 * -1.25);
+                //Log.d("JoyZ: " + joyZ);
+            } else {
+                if (!OI.manipulatorRezero.get()) {
+                    if (manipWasTrue) {
+                        Robot.drive.gyro.shiftZero(Robot.drive.gyro.getForPID()); //TODO: shiftZero or setZero?
+                        angle = 0;
+                    }
+                    //Robot.drive.fieldCentricDrive(joyX, -joyY, -joyX2);
+
+                    if (joyX2 == 0 && joyY2 == 0) {
+                        Robot.drive.fieldCentricAbsoluteAngleDrive(joyX, joyY, angle);
+                    } else {
+                        Robot.drive.xyzAbsoluteAngleDrive(joyX2, joyY2, angle);
+                    }
+                    manipWasTrue = false;
+                } else {
+                    double manipTurn = Utils.deadzone(-OI.manipulator.getX(), deadzone);
+                    manipTurn *= .5;
+                    Robot.drive.tankDrive(manipTurn, manipTurn);
+                    manipWasTrue = true;
+                }
             }
         }
 

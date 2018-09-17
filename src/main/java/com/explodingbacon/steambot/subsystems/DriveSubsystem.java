@@ -43,12 +43,13 @@ public class DriveSubsystem extends Subsystem {
     public DriveSubsystem() {
         leftMotors = new MotorGroup(VictorSP.class, Map.LEFT_DRIVE_1, Map.LEFT_DRIVE_2);
         rightMotors = new MotorGroup(VictorSP.class, Map.RIGHT_DRIVE_1, Map.RIGHT_DRIVE_2);
-        strafeMotors = new MotorGroup(VictorSP.class, Map.STRAFE_DRIVE_1, Map.STRAFE_DRIVE_2);
         if (Robot.MAIN_ROBOT) {
+            strafeMotors = new MotorGroup(new FakeMotor());
             leftMotors.setReversed(false);
             rightMotors.setReversed(false);
             strafeMotors.setReversed(false);
         } else {
+            strafeMotors = new MotorGroup(VictorSP.class, Map.STRAFE_DRIVE_1, Map.STRAFE_DRIVE_2);
             leftMotors.setReversed(false);
             rightMotors.setReversed(false);
             strafeMotors.setInverts(false, false);
@@ -177,6 +178,11 @@ public class DriveSubsystem extends Subsystem {
     public void tankDrive(double leftRpm, double rightRpm) {
         rotatePID.disable();
         set(leftRpm, rightRpm, 0.0);
+    }
+
+    public void codeFriendlyTankDrive(double leftRpm, double rightRpm) {
+        rotatePID.disable();
+        set(-leftRpm, rightRpm, 0.0);
     }
 
     /**

@@ -18,12 +18,12 @@ public class BetterAuto extends Command {
         vision = Robot.visionThread;
     }
 
-    private final double offset = -2.5;
+    private final double offset = 0;//-2.5;
     private final double frontGearAngle = 0;
     private final double rightGearAngle = 360 - DriveCommand.pegAngle;
     private final double leftGearAngle = DriveCommand.pegAngle;
 
-    private final double blueShootAngle = 360-15;
+    private final double blueShootAngle = 360 - 15;
     private final double redShootAngle = 15;
 
     private final double findingTargetStrafeSpeed = 0.4;

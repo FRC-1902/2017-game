@@ -27,7 +27,6 @@ import com.explodingbacon.bcnlib.vision.Vision;
 import com.explodingbacon.steambot.commands.*;
 import com.explodingbacon.steambot.subsystems.*;
 import edu.wpi.first.wpilibj.IterativeRobot;
-import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -43,9 +42,8 @@ public class Robot extends RobotCore {
     public static VisionThread visionThread = new VisionThread();
     public static PositionLogThread positionLog = new PositionLogThread();
     public static SendableChooser auto;
-    public static SendableChooser baseLine;
     public static SendableChooser alliance;
-   public static SendableChooser whichAutoClass;
+    public static SendableChooser whichAutoClass;
     public static SendableChooser useTouchplate;
     public static SendableChooser shootInAuto;
     public static SendableChooser spamDrive;
@@ -60,7 +58,7 @@ public class Robot extends RobotCore {
 
         oi = new OI();
 
-        Vision.init();
+        //Vision.init();
 
         drive = new DriveSubsystem();
         vision = new VisionSubsystem();
@@ -72,32 +70,25 @@ public class Robot extends RobotCore {
 
         positionLog.start();
 
-        SmartDashboard.putNumber("Shoot Speed", 88000);
+        SmartDashboard.putNumber("Shoot Speed", ShooterSubsystem.SHOOTER_RPM);
 
         auto = new SendableChooser();
-        auto.initTable(NetworkTable.getTable("BaconTable"));
+        //auto.initTable(NetworkTable.getTable("BaconTable"));
         auto.addDefault("Front", "front");
         auto.addObject("Left", "left");
         auto.addObject("Right", "right");
         SmartDashboard.putData("Autonomous Picker", auto);
 
-        baseLine = new SendableChooser();
-        baseLine.initTable(NetworkTable.getTable("BaconTable"));
-        baseLine.addDefault("Yes", "yes");
-        baseLine.addObject("No", "no");
-        SmartDashboard.putData("Do Baseline after Auto", baseLine);
-
         alliance = new SendableChooser();
-        alliance.initTable(NetworkTable.getTable("BaconTable"));
+        //alliance.initTable(NetworkTable.getTable("BaconTable"));
         alliance.addDefault("Blue", "blue");
         alliance.addObject("Red", "red");
         SmartDashboard.putData("Which Alliance", alliance);
 
         whichAutoClass = new SendableChooser();
-        whichAutoClass.initTable(NetworkTable.getTable("BaconTable"));
-        whichAutoClass.addDefault("Vision", "vision");
-        whichAutoClass.addObject("Dead Reckon (Center Only)", "dead");
-        whichAutoClass.addObject("Baseline Only", "baseline");
+        //whichAutoClass.initTable(NetworkTable.getTable("BaconTable"));
+        whichAutoClass.addDefault("Auto: Normal", "normal");
+        whichAutoClass.addObject("Auto: Baseline Only", "baseline");
         SmartDashboard.putData("Which Auto File", whichAutoClass);
 
         useTouchplate = new SendableChooser();
@@ -129,7 +120,7 @@ public class Robot extends RobotCore {
         }
 
         Log.i("Air Pork " + (MAIN_ROBOT ? "One" : "Too") + " initialized.");
-        if (!MAIN_ROBOT) Log.w("ROBOT IN PRACTICE MODE!");
+        if (!MAIN_ROBOT) Log.w("THIS ROBOT'S CODE IS FOR THE PRACTICE ROBOT!");
     }
 
     @Override
@@ -153,6 +144,7 @@ public class Robot extends RobotCore {
     @Override
     public void enabledPeriodic() {
         super.enabledPeriodic();
+        //Log.d("gyro: " + drive.gyro.getForPID());
     }
 
     @Override
@@ -166,15 +158,16 @@ public class Robot extends RobotCore {
         String r = whichAutoClass.getSelected().toString();
         Log.d("Auto selected: " + r);
 
-        if (r.equalsIgnoreCase("vision") || r.equalsIgnoreCase("dead")) {
-            OI.runCommand(new BetterAuto());
-            Log.a("Doing standard auto.");
-        }/* else if (r.equalsIgnoreCase("dead")) {
-            OI.runCommand(new DeadreckonAuto());
-            Log.d("Doing dead-wreckoning auto.");
-        }*/ else if (r.equalsIgnoreCase("baseline")) {
+        if (r.equalsIgnoreCase("baseline")) {
             OI.runCommand(new BaselineAuto());
-            Log.d("Doing baseline auto.");
+        } else {
+
+            if (MAIN_ROBOT) {
+                OI.runCommand(new AP1_Auto());
+                //drive.codeFriendlyTankDrive(0.5, 0.5);
+            } else {
+                OI.runCommand(new AP2_Auto());
+            }
         }
 
         //OI.runCommand(new StreamlineAuto());
@@ -203,6 +196,7 @@ public class Robot extends RobotCore {
     @Override
     public void teleopPeriodic() {
         super.teleopPeriodic();
+        Log.d("Encoder: " + shooter.shootEncoder.getForPID());
     }
 
     @Override
@@ -210,7 +204,7 @@ public class Robot extends RobotCore {
         super.disabledPeriodic();
         //Log.d("gyro: " + drive.gyro.getForPID());
 
-        //Log.d("Encoder: " + drive.strafeEncoder.getForPID());
+        Log.d("Encoder: " + shooter.shootEncoder.getForPID());
     }
 
     @Override
@@ -226,7 +220,13 @@ public class Robot extends RobotCore {
             Thread.sleep(500);
         } catch (Exception e) {}
         shooter.getDisturber().setPower(0);
+        shooter.getShooter().setPower(0.5);
+        try {
+            Thread.sleep(500);
+        } catch (Exception e) {}
+        shooter.getShooter().setPower(0);
     }
+
 
     @Override
     public void testPeriodic() {

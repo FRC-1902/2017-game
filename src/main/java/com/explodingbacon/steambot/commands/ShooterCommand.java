@@ -18,13 +18,10 @@ public class ShooterCommand extends Command {
     public void onLoop() {
         if (OI.shooterRev.get()) {
             shooter.rev();
-            shooter.getDisturber().setPower(0);
-            shooter.getIndexer().setPower(0);
         } else {
             shooter.stopRev();
-            shooter.getDisturber().setPower(0);
-            shooter.getIndexer().setPower(0);
         }
+        shooter.shoot(); //checks for input, don't worry
     }
 
     @Override

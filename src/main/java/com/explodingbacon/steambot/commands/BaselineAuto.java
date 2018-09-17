@@ -10,9 +10,17 @@ public class BaselineAuto extends Command {
         long start = System.currentTimeMillis();
         while (Robot.isAutonomous() && Robot.isEnabled()) {
             if (System.currentTimeMillis() - start <= 2000) {
-                Robot.drive.fieldCentricAbsoluteAngleDrive(0, 0.9, 0);
+                if (Robot.MAIN_ROBOT) {
+                    Robot.drive.codeFriendlyTankDrive(.9, .9);
+                } else {
+                    Robot.drive.fieldCentricAbsoluteAngleDrive(0, 0.9, 0);
+                }
             } else {
-                Robot.drive.fieldCentricAbsoluteAngleDrive(0, 0, 0);
+                if (Robot.MAIN_ROBOT) {
+                    Robot.drive.codeFriendlyTankDrive(0, 0);
+                } else {
+                    Robot.drive.fieldCentricAbsoluteAngleDrive(0, 0, 0);
+                }
             }
         }
     }
@@ -27,6 +35,6 @@ public class BaselineAuto extends Command {
 
     @Override
     public boolean isFinished() {
-        return false;
+        return true;
     }
 }

@@ -3,6 +3,7 @@ package com.explodingbacon.steambot;
 import com.explodingbacon.bcnlib.controllers.Button;
 import com.explodingbacon.bcnlib.controllers.XboxController;
 import com.explodingbacon.bcnlib.framework.AbstractOI;
+import com.explodingbacon.steambot.subsystems.XboxLogitch;
 
 public class OI extends AbstractOI {
 
@@ -27,8 +28,13 @@ public class OI extends AbstractOI {
     public static void init() {
         isInit = true;
 
-        drive = new XboxController(0);
-        manipulator = new XboxController(1); //port 1
+        if (Robot.MAIN_ROBOT) {
+            drive = new XboxController(0);
+            manipulator = new XboxController(1);
+        } else {
+            drive = new XboxLogitch(0);
+            manipulator = new XboxLogitch(1);
+        }
 
         rezero = drive.start;
 
